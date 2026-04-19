@@ -152,13 +152,11 @@ function filterHistory(category, btn) {
     renderHistory(filtered);
 }
 
-// Rendering Logic
-function renderRecent(txs) {
-    recentTxEl.innerHTML = txs.map(t => createTxRow(t)).join('');
-}
-
-function renderHistory(txs) {
-    fullHistoryEl.innerHTML = txs.map(t => createTxRow(t)).join('');
+// Global functions for icon fallbacks
+window.onIconError = function(el) {
+    el.style.display = 'none';
+    const fallback = el.nextElementSibling;
+    if (fallback) fallback.style.display = 'flex';
 }
 
 function renderHoldings(items) {
@@ -167,11 +165,8 @@ function renderHoldings(items) {
     let html = `
         <div class="glass-card p-4 rounded-2xl flex items-center justify-between border-blue-500/10 mb-3">
             <div class="flex items-center gap-3">
-                <div class="asset-icon bg-red-500/20 text-red-500">
-                    <img src="https://coinicons-api.vercel.app/api/icon/idr" 
-                         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'"
-                         class="w-10 h-10 object-contain">
-                    <span style="display:none" class="flex items-center justify-center w-full h-full">Rp</span>
+                <div class="asset-icon bg-red-500/20 text-red-500 overflow-hidden">
+                    <span class="flex items-center justify-center w-full h-full font-bold">Rp</span>
                 </div>
                 <div>
                     <h4 class="font-bold text-sm text-white">IDR</h4>
@@ -191,11 +186,11 @@ function renderHoldings(items) {
         return `
             <div class="glass-card p-4 rounded-2xl flex items-center justify-between mb-3 last:mb-0">
                 <div class="flex items-center gap-3">
-                    <div class="asset-icon bg-blue-500/20 text-blue-400 overflow-hidden">
-                        <img src="https://coinicons-api.vercel.app/api/icon/${symbol}" 
-                             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'"
-                             class="w-10 h-10 object-contain">
-                        <span style="display:none" class="flex items-center justify-center w-full h-full">${h.asset.substring(0, 1)}</span>
+                    <div class="asset-icon bg-blue-500/20 text-blue-400 overflow-hidden relative">
+                        <img src="https://assets.coincap.io/assets/icons/${symbol}@2x.png" 
+                             onerror="onIconError(this)"
+                             class="w-8 h-8 object-contain">
+                        <span style="display:none" class="absolute inset-0 flex items-center justify-center font-bold text-xs">${h.asset.substring(0, 1)}</span>
                     </div>
                     <div>
                         <h4 class="font-bold text-sm text-white">${h.asset}</h4>
@@ -227,11 +222,11 @@ function createTxRow(t) {
     if (isCrypto) {
         const symbol = (t.asset || t.category).toLowerCase();
         iconHtml = `
-            <div class="w-10 h-10 rounded-xl flex items-center justify-center bg-white/5 overflow-hidden border border-white/5">
-                <img src="https://coinicons-api.vercel.app/api/icon/${symbol}" 
-                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'"
-                     class="w-7 h-7 object-contain">
-                <span style="display:none" class="text-xs font-bold">${symbol.substring(0, 1).toUpperCase()}</span>
+            <div class="w-10 h-10 rounded-xl flex items-center justify-center bg-white/5 overflow-hidden border border-white/5 relative">
+                <img src="https://assets.coincap.io/assets/icons/${symbol}@2x.png" 
+                     onerror="onIconError(this)"
+                     class="w-6 h-6 object-contain">
+                <span style="display:none" class="absolute inset-0 flex items-center justify-center text-xs font-bold">${symbol.substring(0, 1).toUpperCase()}</span>
             </div>
         `;
     }
@@ -296,7 +291,7 @@ function openAddModal(type) {
     
     const content = `
         <div class="flex items-center justify-between mb-6">
-            <h3 class="text-xl font-bold">${title}</h3>
+            <h3 class="text-xl font-bold text-white">${title}</h3>
             <button onclick="closeModal()" class="text-slate-400">Tutup</button>
         </div>
         <form id="add-form" class="space-y-4">
