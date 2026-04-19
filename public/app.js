@@ -34,8 +34,9 @@ function init() {
     tg.ready();
     tg.expand();
     
-    tg.setHeaderColor('#0f172a');
-    tg.setBackgroundColor('#0f172a');
+    // Gunakan keyword 'bg_color' untuk menghilangkan bar biru dan menyatu dengan tema
+    tg.setHeaderColor('bg_color');
+    tg.setBackgroundColor('bg_color');
 
     const user = tg.initDataUnsafe?.user;
     if (user && user.id) {
@@ -137,7 +138,12 @@ function renderHoldings(items) {
     let html = `
         <div class="glass-card p-4 rounded-2xl flex items-center justify-between border-blue-500/10 mb-3">
             <div class="flex items-center gap-3">
-                <div class="asset-icon bg-red-500/20 text-red-500">Rp</div>
+                <div class="asset-icon bg-red-500/20 text-red-500">
+                    <img src="https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/idr.png" 
+                         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'"
+                         class="w-8 h-8">
+                    <span style="display:none">Rp</span>
+                </div>
                 <div>
                     <h4 class="font-bold text-sm text-white">IDR</h4>
                     <p class="text-[10px] text-slate-400">Rupiah</p>
@@ -152,10 +158,16 @@ function renderHoldings(items) {
 
     html += items.map(h => {
         const name = coinNames[h.asset] || h.asset;
+        const symbol = h.asset.toLowerCase();
         return `
             <div class="glass-card p-4 rounded-2xl flex items-center justify-between mb-3 last:mb-0">
                 <div class="flex items-center gap-3">
-                    <div class="asset-icon bg-blue-500/20 text-blue-400">${h.asset.substring(0, 1)}</div>
+                    <div class="asset-icon bg-blue-500/20 text-blue-400">
+                        <img src="https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/${symbol}.png" 
+                             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'"
+                             class="w-8 h-8">
+                        <span style="display:none" class="flex items-center justify-center w-full h-full">${h.asset.substring(0, 1)}</span>
+                    </div>
                     <div>
                         <h4 class="font-bold text-sm text-white">${h.asset}</h4>
                         <p class="text-[10px] text-slate-400">${name}</p>
@@ -200,7 +212,7 @@ function createTxRow(t) {
 }
 
 function getTransactionIcon(cat, type) {
-    if (type === 'income') return '💰';
+    if (type === 'income' || type === 'sell') return '💰';
     
     cat = (cat || '').toLowerCase();
     if (cat.includes('makan')) return '🍲';
@@ -350,7 +362,6 @@ function formatIDR(val) {
 }
 
 function openDetailModal(id) {
-    // Logic for detail modal could be here
     showToast('Detail transaksi ID: ' + id, 'ℹ️');
 }
 
