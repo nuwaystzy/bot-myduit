@@ -1,4 +1,4 @@
-import { getCashflowSummary, getPortfolioSummary } from '../lib/reports.js';
+import { getCashflowSummary, getPortfolioSummary, getCategoryStats } from '../lib/reports.js';
 import { supabase } from '../lib/db.js';
 
 export default async function handler(req, res) {
