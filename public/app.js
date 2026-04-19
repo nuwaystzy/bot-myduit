@@ -7,6 +7,17 @@ let userId = tg.initDataUnsafe?.user?.id || 123456;
 let userName = tg.initDataUnsafe?.user?.first_name || 'Guest';
 let userPhoto = tg.initDataUnsafe?.user?.photo_url || null;
 let allTransactions = []; 
+let allCash = 0; 
+
+const coinNames = {
+    'BTC': 'Bitcoin',
+    'ETH': 'Ethereum',
+    'SOL': 'Solana',
+    'BNB': 'Binance Coin',
+    'USDT': 'Tether',
+    'USDC': 'USD Coin',
+    'IDR': 'Rupiah'
+};
 
 // UI Elements
 const totalWealthEl = document.getElementById('total-wealth');
@@ -23,7 +34,6 @@ function init() {
     tg.ready();
     tg.expand();
     
-    // Hapus bar biru di paling atas
     tg.setHeaderColor('#0f172a');
     tg.setBackgroundColor('#0f172a');
 
@@ -47,8 +57,8 @@ function init() {
 }
 
 async function refreshData() {
+    await fetchSummary();
     await Promise.all([
-        fetchSummary(),
         fetchHistory(),
         fetchHoldings()
     ]);
@@ -59,6 +69,7 @@ async function fetchSummary() {
         const res = await fetch(`/api/summary?user_id=${userId}`);
         const data = await res.json();
         
+        allCash = data.income - data.expense;
         totalWealthEl.innerText = formatIDR(data.total);
         totalIncomeEl.innerText = formatIDR(data.income);
         totalExpenseEl.innerText = formatIDR(data.expense);
@@ -121,29 +132,47 @@ function renderHistory(txs) {
 }
 
 function renderHoldings(items) {
-    if (!items.length) {
-        holdingsListEl.innerHTML = '<p class="text-center text-slate-500 py-10">Belum ada aset koin.</p>';
-        return;
-    }
-    holdingsListEl.innerHTML = items.map(h => `
-        <div class="glass-card p-4 rounded-2xl flex items-center justify-between">
+    const list = document.getElementById('holdings-list');
+    
+    let html = `
+        <div class="glass-card p-4 rounded-2xl flex items-center justify-between border-blue-500/10 mb-3">
             <div class="flex items-center gap-3">
-                <div class="w-10 h-10 bg-blue-500/20 rounded-xl flex items-center justify-center font-bold text-blue-400">
-                    ${h.asset.substring(0, 1)}
-                </div>
+                <div class="asset-icon bg-red-500/20 text-red-500">Rp</div>
                 <div>
-                    <h4 class="font-bold text-sm text-white">${h.asset}</h4>
-                    <p class="text-[10px] text-slate-400">${h.quantity} UNIT</p>
+                    <h4 class="font-bold text-sm text-white">IDR</h4>
+                    <p class="text-[10px] text-slate-400">Rupiah</p>
                 </div>
             </div>
             <div class="text-right">
-                <p class="font-bold text-sm text-white">${formatIDR(h.currentValue)}</p>
-                <p class="text-[10px] ${h.pnl >= 0 ? 'text-green-400' : 'text-red-400'}">
-                    ${h.pnl >= 0 ? '+' : ''}${h.pnlPercent.toFixed(2)}%
-                </p>
+                <p class="font-bold text-sm text-white">${formatIDR(allCash)}</p>
+                <p class="text-[10px] text-slate-400">CASH</p>
             </div>
         </div>
-    `).join('');
+    `;
+
+    html += items.map(h => {
+        const name = coinNames[h.asset] || h.asset;
+        return `
+            <div class="glass-card p-4 rounded-2xl flex items-center justify-between mb-3 last:mb-0">
+                <div class="flex items-center gap-3">
+                    <div class="asset-icon bg-blue-500/20 text-blue-400">${h.asset.substring(0, 1)}</div>
+                    <div>
+                        <h4 class="font-bold text-sm text-white">${h.asset}</h4>
+                        <p class="text-[10px] text-slate-400">${name}</p>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <p class="font-bold text-sm text-white">${Number(h.quantity).toLocaleString()} ${h.asset}</p>
+                    <p class="text-[10px] text-slate-400">${formatIDR(h.currentValue)}</p>
+                    <p class="text-[9px] ${h.pnl >= 0 ? 'text-green-400' : 'text-red-400'} font-medium">
+                        ${h.pnl >= 0 ? '+' : ''}${h.pnlPercent.toFixed(2)}%
+                    </p>
+                </div>
+            </div>
+        `;
+    }).join('');
+
+    list.innerHTML = html;
 }
 
 function createTxRow(t) {
@@ -152,10 +181,10 @@ function createTxRow(t) {
     const sign = isPositive ? '+' : '-';
     
     return `
-        <div class="glass-card p-4 rounded-2xl flex items-center justify-between active:bg-white/5 transition-all" onclick="openDetailModal('${t.id}')">
+        <div class="glass-card p-4 rounded-2xl flex items-center justify-between active:bg-white/5 transition-all mb-3 last:mb-0" onclick="openDetailModal('${t.id}')">
             <div class="flex items-center gap-3">
                 <div class="w-10 h-10 rounded-xl flex items-center justify-center bg-white/5 text-lg">
-                    ${getTransactionIcon(t.category)}
+                    ${getTransactionIcon(t.category, t.type)}
                 </div>
                 <div>
                     <h4 class="font-bold text-sm capitalize text-white">${t.category || t.asset || 'N/A'}</h4>
@@ -170,7 +199,27 @@ function createTxRow(t) {
     `;
 }
 
-// Navigation
+function getTransactionIcon(cat, type) {
+    if (type === 'income') return '💰';
+    
+    cat = (cat || '').toLowerCase();
+    if (cat.includes('makan')) return '🍲';
+    if (cat.includes('kopi') || cat.includes('minum')) return '☕';
+    if (cat.includes('gaji') || cat.includes('masuk')) return '💰';
+    if (cat.includes('transport') || cat.includes('gojek')) return '🚗';
+    if (cat.includes('tagihan') || cat.includes('listrik')) return '📄';
+    return '📝';
+}
+
+function showLoading(isLoading) {
+    const main = document.querySelector('main');
+    if (isLoading) {
+        main.classList.add('status-loading');
+    } else {
+        main.classList.remove('status-loading');
+    }
+}
+
 function switchTab(tabId) {
     document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
     document.getElementById(`tab-${tabId}`).classList.remove('hidden');
@@ -187,7 +236,6 @@ function switchTab(tabId) {
     if (tabId === 'history' || tabId === 'portfolio') refreshData();
 }
 
-// Modals
 function openAddModal(type) {
     const isIncome = type === 'income';
     const title = isIncome ? 'Tambah Pemasukan' : 'Catat Pengeluaran';
@@ -301,171 +349,9 @@ function formatIDR(val) {
     return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(val || 0);
 }
 
-function getTransactionIcon(cat) {
-    cat = (cat || '').toLowerCase();
-    if (cat.includes('makan')) return '🍲';
-    if (cat.includes('kopi') || cat.includes('minum')) return '☕';
-    if (cat.includes('gaji') || cat.includes('masuk')) return '💰';
-    if (cat.includes('transport') || cat.includes('gojek')) return '🚗';
-    if (cat.includes('tagihan') || cat.includes('listrik')) return '📄';
-    return '📝';
-}
-
-function showLoading(isLoading) {
-    const main = document.querySelector('main');
-    if (isLoading) {
-        main.classList.add('status-loading');
-    } else {
-        main.classList.remove('status-loading');
-    }
-}
-
-// Start
-init();
-
-// Navigation
-function switchTab(tabId) {
-    document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-    document.getElementById(`tab-${tabId}`).classList.remove('hidden');
-    
-    document.querySelectorAll('.nav-btn').forEach(btn => {
-        btn.classList.remove('text-blue-500');
-        btn.classList.add('text-slate-400');
-        if (btn.dataset.tab === tabId) {
-            btn.classList.add('text-blue-500');
-            btn.classList.remove('text-slate-400');
-        }
-    });
-
-    // If history or portfolio, make sure it's fresh
-    if (tabId === 'history' || tabId === 'portfolio') refreshData();
-}
-
-// Modals
-function openAddModal(type) {
-    const isIncome = type === 'income';
-    const title = isIncome ? 'Tambah Pemasukan' : 'Catat Pengeluaran';
-    
-    const content = `
-        <div class="flex items-center justify-between mb-6">
-            <h3 class="text-xl font-bold">${title}</h3>
-            <button onclick="closeModal()" class="text-slate-400">Tutup</button>
-        </div>
-        <form id="add-form" class="space-y-4">
-            <input type="hidden" name="type" value="${type}">
-            <div>
-                <label class="text-xs text-slate-400 mb-1 block uppercase font-bold tracking-wider">Nominal (Rp)</label>
-                <input type="number" name="amount_rp" autofocus required class="w-full bg-white/5 border border-white/10 p-4 rounded-2xl font-bold text-lg focus:border-blue-500 outline-none" placeholder="0">
-            </div>
-            <div>
-                <label class="text-xs text-slate-400 mb-1 block uppercase font-bold tracking-wider">Kategori / Aset</label>
-                <input type="text" name="category" required class="w-full bg-white/5 border border-white/10 p-4 rounded-2xl focus:border-blue-500 outline-none" placeholder="Misal: Makan, Gaji, BTC">
-            </div>
-            <div>
-                <label class="text-xs text-slate-400 mb-1 block uppercase font-bold tracking-wider">Catatan (Opsional)</label>
-                <textarea name="note" class="w-full bg-white/5 border border-white/10 p-4 rounded-2xl focus:border-blue-500 outline-none h-20" placeholder="Ketik catatan..."></textarea>
-            </div>
-            <button type="submit" class="w-full py-4 bg-blue-600 rounded-2xl font-bold text-lg active:scale-95 transition-transform mt-4">Simpan Transaksi</button>
-        </form>
-    `;
-    
-    showModal(content);
-    
-    document.getElementById('add-form').onsubmit = async (e) => {
-        e.preventDefault();
-        const formData = new FormData(e.target);
-        const body = Object.fromEntries(formData.entries());
-        body.user_id = userId;
-        
-        // Basic detection if it's crypto (optional)
-        if (['BTC', 'ETH', 'SOL', 'BNB'].includes(body.category.toUpperCase())) {
-            body.asset = body.category.toUpperCase();
-            body.type = isIncome ? 'sell' : 'buy';
-            // Note: simple version assumes quantity is calculated later or input is pure cash spent
-        }
-
-        try {
-            const res = await fetch('/api/add', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(body)
-            });
-            const result = await res.json();
-            if (result.success) {
-                showToast('Transaksi disimpan!', '✅');
-                closeModal();
-                refreshData();
-            } else {
-                showToast(result.error || 'Gagal menyimpan', '❌');
-            }
-        } catch (err) {
-            showToast('Network Error', '❌');
-        }
-    }
-}
-
-function confirmReset() {
-    const content = `
-        <div class="text-center space-y-6">
-            <div class="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto text-3xl">⚠️</div>
-            <h3 class="text-xl font-bold">Hapus Semua Data?</h3>
-            <p class="text-sm text-slate-400">Tindakan ini tidak bisa dibatalkan secara manual. Seluruh riwayat transaksi akan hilang.</p>
-            <div class="flex gap-4">
-                <button onclick="closeModal()" class="flex-1 py-4 glass-card rounded-2xl font-bold">Batal</button>
-                <button id="reset-final-btn" class="flex-1 py-4 bg-red-600 rounded-2xl font-bold">Ya, Hapus</button>
-            </div>
-        </div>
-    `;
-    showModal(content);
-    document.getElementById('reset-final-btn').onclick = async () => {
-        const res = await fetch('/api/reset', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ user_id: userId })
-        });
-        if (res.ok) {
-            showToast('Data direset!', '🧹');
-            closeModal();
-            refreshData();
-        }
-    };
-}
-
-// Helpers
-function showModal(content) {
-    const overlay = document.getElementById('modal-overlay');
-    const container = document.getElementById('modal-container');
-    container.innerHTML = content;
-    overlay.classList.remove('hidden');
-    setTimeout(() => overlay.classList.remove('opacity-0'), 10);
-}
-
-function closeModal() {
-    const overlay = document.getElementById('modal-overlay');
-    overlay.classList.add('opacity-0');
-    setTimeout(() => overlay.classList.add('hidden'), 300);
-}
-
-function showToast(msg, icon = '✨') {
-    const toast = document.getElementById('toast');
-    document.getElementById('toast-msg').innerText = msg;
-    document.getElementById('toast-icon').innerText = icon;
-    toast.classList.remove('-translate-y-20');
-    setTimeout(() => toast.classList.add('-translate-y-20'), 2500);
-}
-
-function formatIDR(val) {
-    return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(val || 0);
-}
-
-function getTransactionIcon(cat) {
-    cat = (cat || '').toLowerCase();
-    if (cat.includes('makan')) return '🍲';
-    if (cat.includes('kopi') || cat.includes('minum')) return '☕';
-    if (cat.includes('gaji') || cat.includes('masuk')) return '💰';
-    if (cat.includes('transport') || cat.includes('gojek')) return '🚗';
-    if (cat.includes('tagihan') || cat.includes('listrik')) return '📄';
-    return '📝';
+function openDetailModal(id) {
+    // Logic for detail modal could be here
+    showToast('Detail transaksi ID: ' + id, 'ℹ️');
 }
 
 // Start
