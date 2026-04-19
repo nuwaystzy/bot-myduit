@@ -243,13 +243,16 @@ function createTxRow(t) {
     let iconHtml = '';
     
     if (isCrypto) {
-        const symbol = (t.asset || t.category || '').toLowerCase();
+        // Tipe beli (Buy) menghasilkan warna Hijau, Jual (Sell) merah - Sesuai request user.
+        const cryptoColor = t.type === 'buy' ? 'bg-green-500' : 'bg-red-500';
+        
         iconHtml = `
-            <div class="w-11 h-11 rounded-2xl flex items-center justify-center bg-[#1c1c1e] overflow-hidden border border-white/5 relative shadow-inner shrink-0">
-                <img src="${getCoinIconUrl(symbol)}" 
-                     onerror="onIconError(this)"
-                     class="w-11 h-11 object-cover scale-110">
-                <span style="display:none" class="absolute inset-0 flex items-center justify-center text-xs font-black">${symbol.substring(0, 1).toUpperCase()}</span>
+            <div class="w-11 h-11 rounded-2xl flex items-center justify-center bg-[#1c1c1e] border border-white/5 relative shadow-inner shrink-0 group">
+                <!-- Flaticon Crypto Buy/Sell Mask -->
+                <div class="w-6 h-6 ${cryptoColor}" style="-webkit-mask: url('https://cdn-icons-png.flaticon.com/512/9478/9478639.png') no-repeat center / contain; mask: url('https://cdn-icons-png.flaticon.com/512/9478/9478639.png') no-repeat center / contain;"></div>
+                
+                <!-- Tiny coin overlay -->
+                <img src="${getCoinIconUrl((t.asset || t.category || '').toLowerCase())}" class="absolute -bottom-1 -right-1 w-4 h-4 rounded-full border border-[#171717] opacity-80" onerror="this.style.display='none'">
             </div>
         `;
     } else {
