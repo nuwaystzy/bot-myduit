@@ -165,8 +165,8 @@ function renderHoldings(items) {
     let html = `
         <div class="glass-card p-4 rounded-2xl flex items-center justify-between border-blue-500/10 mb-3">
             <div class="flex items-center gap-3">
-                <div class="asset-icon bg-red-500/20 text-red-500 overflow-hidden">
-                    <span class="flex items-center justify-center w-full h-full font-bold">Rp</span>
+                <div class="asset-icon bg-red-500/20 text-red-500 overflow-hidden flex items-center justify-center">
+                    <span class="font-bold text-sm">Rp</span>
                 </div>
                 <div>
                     <h4 class="font-bold text-sm text-white">IDR</h4>
@@ -186,8 +186,8 @@ function renderHoldings(items) {
         return `
             <div class="glass-card p-4 rounded-2xl flex items-center justify-between mb-3 last:mb-0">
                 <div class="flex items-center gap-3">
-                    <div class="asset-icon bg-blue-500/20 text-blue-400 overflow-hidden relative">
-                        <img src="https://assets.coincap.io/assets/icons/${symbol}@2x.png" 
+                    <div class="asset-icon bg-white/5 border border-white/5 text-blue-400 overflow-hidden relative flex items-center justify-center">
+                        <img src="https://coinicons-api.vercel.app/api/icon/${symbol}" 
                              onerror="onIconError(this)"
                              class="w-8 h-8 object-contain">
                         <span style="display:none" class="absolute inset-0 flex items-center justify-center font-bold text-xs">${h.asset.substring(0, 1)}</span>
@@ -220,12 +220,12 @@ function createTxRow(t) {
     let iconHtml = `<div class="w-10 h-10 rounded-xl flex items-center justify-center bg-white/5 text-lg">${getTransactionIcon(t.category, t.type)}</div>`;
     
     if (isCrypto) {
-        const symbol = (t.asset || t.category).toLowerCase();
+        const symbol = (t.asset || t.category || '').toLowerCase();
         iconHtml = `
             <div class="w-10 h-10 rounded-xl flex items-center justify-center bg-white/5 overflow-hidden border border-white/5 relative">
-                <img src="https://assets.coincap.io/assets/icons/${symbol}@2x.png" 
+                <img src="https://coinicons-api.vercel.app/api/icon/${symbol}" 
                      onerror="onIconError(this)"
-                     class="w-6 h-6 object-contain">
+                     class="w-7 h-7 object-contain">
                 <span style="display:none" class="absolute inset-0 flex items-center justify-center text-xs font-bold">${symbol.substring(0, 1).toUpperCase()}</span>
             </div>
         `;
