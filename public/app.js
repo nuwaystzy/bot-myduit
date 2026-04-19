@@ -22,28 +22,31 @@ function init() {
     tg.ready();
     tg.expand();
     
-    // Log debug (bisa dilihat di Inspect)
-    console.log('Init Data:', tg.initDataUnsafe);
+    console.log('Final Init Data Check:', tg.initDataUnsafe);
 
+    // Deteksi User ID dengan hirarki: initData -> URL Param -> Fallback
     const user = tg.initDataUnsafe?.user;
-    if (user) {
+    if (user && user.id) {
         userId = user.id;
-        userName = user.first_name;
+        userName = user.first_name || 'User';
         if (user.photo_url) userPhoto = user.photo_url;
     } else {
-        // Coba ambil dari URL param jika bot ngirim manual
         const urlParams = new URLSearchParams(window.location.search);
         const paramId = urlParams.get('user_id');
         if (paramId) userId = paramId;
     }
     
+    // Update Header UI segera
     document.getElementById('user-name').innerText = userName;
     if (userPhoto) document.getElementById('user-photo').src = userPhoto;
     
     // Tampilkan loading skeleton
     showLoading(true);
     
-    refreshData().finally(() => {
+    // Refresh data dengan retry singkat jika gagal (masalah jaringan)
+    refreshData().catch(() => {
+        setTimeout(refreshData, 1000);
+    }).finally(() => {
         showLoading(false);
     });
     
