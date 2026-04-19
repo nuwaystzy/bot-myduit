@@ -1,13 +1,12 @@
 {
-  "name": "bot-keuangan-telegram",
+  "name": "bot-keuangan",
   "version": "1.0.0",
-  "description": "Finance + Crypto Tracker Telegram Bot for Vercel",
-  "main": "api/bot.js",
   "type": "module",
-  "dependencies": {
-    "@supabase/supabase-js": "^2.39.0"
+  "main": "api/bot.js",
+  "scripts": {
+    "start": "node api/bot.js"
   },
   "engines": {
-    "node": "22.x"
+    "node": "20.x"
   }
 }
