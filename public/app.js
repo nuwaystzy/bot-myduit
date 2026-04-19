@@ -82,8 +82,8 @@ async function fetchSummary() {
         const pnlColor = pnl >= 0 ? 'text-green-400' : 'text-red-400';
         cryptoPnLEl.className = `text-sm font-medium mt-1 ${pnlColor}`;
         cryptoPnLEl.innerText = `PnL: ${formatIDR(pnl)} (${pnlPct.toFixed(2)}%)`;
-
-        renderCategoryReport(data.categories || [], Number(data.expense || 0));
+        
+        // Removed static renderCategoryReport here, as it's now handled by dynamic toggle
     } catch (err) {
         console.error('Fetch Summary Error:', err);
     }
@@ -95,7 +95,7 @@ async function fetchHistory() {
         allTransactions = await res.json();
         renderRecent(allTransactions.slice(0, 5));
         renderHistory(allTransactions);
-        calculateTimeframeReports(allTransactions);
+        changeReportTimeframe(currentReportTimeframe);
     } catch (err) {
         console.error('Fetch History Error:', err);
     }
@@ -293,55 +293,72 @@ function renderHistory(txs) {
     fullHistoryEl.innerHTML = txs.map(t => createTxRow(t)).join('');
 }
 
-function calculateTimeframeReports(txs) {
-    const now = new Date();
-    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+let currentReportTimeframe = 'month';
+
+function changeReportTimeframe(timeframe) {
+    currentReportTimeframe = timeframe;
     
-    // First day of this week (assuming Monday is start of week)
-    const dayOfWeek = now.getDay() || 7; 
-    const firstDayOfWeek = new Date(today);
-    firstDayOfWeek.setDate(today.getDate() - dayOfWeek + 1);
+    // Update Toggle UI
+    document.querySelectorAll('.rep-toggle').forEach(b => {
+        b.classList.remove('bg-blue-500/10', 'border-blue-500/50', 'text-white');
+        b.classList.add('text-slate-400', 'border-transparent');
+    });
+    const activeBtn = document.getElementById(`btn-rep-${timeframe}`);
+    if (activeBtn) {
+        activeBtn.classList.add('bg-blue-500/10', 'border-blue-500/50', 'text-white');
+        activeBtn.classList.remove('text-slate-400', 'border-transparent');
+    }
 
-    // First day of this month
-    const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    renderDynamicReport(allTransactions);
+}
 
-    let dayIn = 0, dayOut = 0;
-    let weekIn = 0, weekOut = 0;
-    let monthIn = 0, monthOut = 0;
+function renderDynamicReport(txs) {
+    const now = new Date();
+    let startDate;
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+    if (currentReportTimeframe === 'day') {
+        startDate = today;
+        document.getElementById('rep-active-title').innerText = 'Hari Ini';
+    } else if (currentReportTimeframe === 'week') {
+        const dayOfWeek = now.getDay() || 7; 
+        startDate = new Date(today);
+        startDate.setDate(today.getDate() - dayOfWeek + 1);
+        document.getElementById('rep-active-title').innerText = 'Minggu Ini';
+    } else {
+        startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+        document.getElementById('rep-active-title').innerText = 'Bulan Ini';
+    }
+
+    let income = 0;
+    let expense = 0;
+    const categoryStats = {};
 
     txs.forEach(t => {
         const d = new Date(t.created_at);
-        const amount = Number(t.amount_rp) || 0;
-        
-        // Exclude internal transfers or non-cashflow crypto if needed, but per original app we consider sell as income, buy as expense.
-        const isIncome = t.type === 'income' || t.type === 'sell';
-        const isExpense = t.type === 'expense' || t.type === 'buy';
-
-        if (d >= today) {
-            if (isIncome) dayIn += amount;
-            if (isExpense) dayOut += amount;
-        }
-        if (d >= firstDayOfWeek) {
-            if (isIncome) weekIn += amount;
-            if (isExpense) weekOut += amount;
-        }
-        if (d >= firstDayOfMonth) {
-            if (isIncome) monthIn += amount;
-            if (isExpense) monthOut += amount;
+        if (d >= startDate) {
+            const amount = Number(t.amount_rp) || 0;
+            if (t.type === 'income' || t.type === 'sell') {
+                income += amount;
+            } else if (t.type === 'expense' || t.type === 'buy') {
+                expense += amount;
+                if (t.type === 'expense') {
+                    const cat = t.category || 'Lainnya';
+                    categoryStats[cat] = (categoryStats[cat] || 0) + amount;
+                }
+            }
         }
     });
 
-    const setEl = (id, val) => {
-        const el = document.getElementById(id);
-        if (el) el.innerText = formatIDR(val);
-    };
+    document.getElementById('rep-active-in').innerText = formatIDR(income);
+    document.getElementById('rep-active-out').innerText = formatIDR(expense);
 
-    setEl('rep-day-in', dayIn);
-    setEl('rep-day-out', dayOut);
-    setEl('rep-week-in', weekIn);
-    setEl('rep-week-out', weekOut);
-    setEl('rep-month-in', monthIn);
-    setEl('rep-month-out', monthOut);
+    // Build Categories Array
+    const categoriesArray = Object.entries(categoryStats)
+        .map(([category, amount]) => ({ category, amount }))
+        .sort((a, b) => b.amount - a.amount);
+
+    renderCategoryReport(categoriesArray, expense);
 }
 
 function showLoading(isLoading) {

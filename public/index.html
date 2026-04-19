@@ -96,49 +96,22 @@
                         </div>
                     </div>
                     
-                    <div class="space-y-4">
-                        <!-- HARI INI -->
-                        <div class="bg-white/5 p-4 rounded-2xl border border-white/5 shadow-inner">
-                            <h3 class="text-[10px] font-black text-slate-400 tracking-widest uppercase mb-3 text-center">Hari Ini</h3>
-                            <div class="flex justify-between">
-                                <div class="text-center w-1/2 border-r border-white/10">
-                                    <p class="text-[9px] text-green-400 font-black uppercase tracking-wider mb-1">Pemasukan</p>
-                                    <p id="rep-day-in" class="font-black text-sm text-white">Rp 0</p>
-                                </div>
-                                <div class="text-center w-1/2">
-                                    <p class="text-[9px] text-red-400 font-black uppercase tracking-wider mb-1">Pengeluaran</p>
-                                    <p id="rep-day-out" class="font-black text-sm text-white">Rp 0</p>
-                                </div>
-                            </div>
-                        </div>
+                    <div class="flex items-center gap-2 overflow-x-auto hide-scrollbar pb-1 justify-center">
+                        <button onclick="changeReportTimeframe('day')" id="btn-rep-day" class="rep-toggle px-5 py-2 rounded-full glass-card text-[11px] font-bold whitespace-nowrap border-transparent text-slate-400 transition-all">Hari Ini</button>
+                        <button onclick="changeReportTimeframe('week')" id="btn-rep-week" class="rep-toggle px-5 py-2 rounded-full glass-card text-[11px] font-bold whitespace-nowrap border-transparent text-slate-400 transition-all">Minggu</button>
+                        <button onclick="changeReportTimeframe('month')" id="btn-rep-month" class="rep-toggle px-5 py-2 rounded-full glass-card text-[11px] font-bold whitespace-nowrap border-blue-500/50 bg-blue-500/10 text-white transition-all">Bulan Ini</button>
+                    </div>
 
-                        <!-- MINGGU INI -->
-                        <div class="bg-white/5 p-4 rounded-2xl border border-white/5 shadow-inner">
-                            <h3 class="text-[10px] font-black text-slate-400 tracking-widest uppercase mb-3 text-center">Minggu Ini</h3>
-                            <div class="flex justify-between">
-                                <div class="text-center w-1/2 border-r border-white/10">
-                                    <p class="text-[9px] text-green-400 font-black uppercase tracking-wider mb-1">Pemasukan</p>
-                                    <p id="rep-week-in" class="font-black text-sm text-white">Rp 0</p>
-                                </div>
-                                <div class="text-center w-1/2">
-                                    <p class="text-[9px] text-red-400 font-black uppercase tracking-wider mb-1">Pengeluaran</p>
-                                    <p id="rep-week-out" class="font-black text-sm text-white">Rp 0</p>
-                                </div>
+                    <div class="bg-white/5 p-4 rounded-2xl border border-white/5 shadow-inner">
+                        <h3 id="rep-active-title" class="text-[10px] font-black text-slate-400 tracking-widest uppercase mb-4 text-center">Bulan Ini</h3>
+                        <div class="flex justify-between">
+                            <div class="text-center w-1/2 border-r border-white/10">
+                                <p class="text-[10px] text-green-400 font-black uppercase tracking-wider mb-2">Pemasukan</p>
+                                <p id="rep-active-in" class="font-black text-sm text-white">Rp 0</p>
                             </div>
-                        </div>
-
-                        <!-- BULAN INI -->
-                        <div class="bg-white/5 p-4 rounded-2xl border border-white/5 shadow-inner">
-                            <h3 class="text-[10px] font-black text-slate-400 tracking-widest uppercase mb-3 text-center">Bulan Ini</h3>
-                            <div class="flex justify-between">
-                                <div class="text-center w-1/2 border-r border-white/10">
-                                    <p class="text-[9px] text-green-400 font-black uppercase tracking-wider mb-1">Pemasukan</p>
-                                    <p id="rep-month-in" class="font-black text-sm text-white">Rp 0</p>
-                                </div>
-                                <div class="text-center w-1/2">
-                                    <p class="text-[9px] text-red-400 font-black uppercase tracking-wider mb-1">Pengeluaran</p>
-                                    <p id="rep-month-out" class="font-black text-sm text-white">Rp 0</p>
-                                </div>
+                            <div class="text-center w-1/2">
+                                <p class="text-[10px] text-red-400 font-black uppercase tracking-wider mb-2">Pengeluaran</p>
+                                <p id="rep-active-out" class="font-black text-sm text-white">Rp 0</p>
                             </div>
                         </div>
                     </div>
