@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="id" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>MyDuit Mini App</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+</head>
+<body class="gradient-bg text-slate-100 min-h-screen pb-24">
+
+    <!-- Header -->
+    <header class="p-6 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+            <img id="user-photo" src="https://ui-avatars.com/api/?name=User&background=3b82f6&color=fff" class="w-10 h-10 rounded-full border-2 border-blue-500 shadow-lg">
+            <div>
+                <p class="text-xs text-slate-400">Halo,</p>
+                <h1 id="user-name" class="font-bold text-lg leading-none">User</h1>
+            </div>
+        </div>
+        <button id="refresh-btn" class="p-2 glass-card rounded-xl active:scale-95 transition-transform">
+            <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+        </button>
+    </header>
+
+    <!-- Main Content -->
+    <main class="px-6 space-y-6">
+        
+        <!-- Summary Dashboard (Tab 1) -->
+        <section id="tab-summary" class="tab-content space-y-6">
+            <div class="crypto-card p-6 rounded-3xl shadow-2xl relative overflow-hidden">
+                <div class="absolute -right-10 -top-10 w-40 h-40 bg-white/10 rounded-full blur-3xl"></div>
+                <p class="text-blue-100 text-sm font-medium mb-1">Total Saldo (Net Worth)</p>
+                <h2 id="total-wealth" class="text-3xl font-bold tracking-tight mb-6">Rp 0</h2>
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="bg-white/10 p-3 rounded-2xl">
+                        <p class="text-[10px] text-blue-100 uppercase tracking-wider mb-1">Pemasukan</p>
+                        <p id="total-income" class="font-bold text-sm text-green-300">Rp 0</p>
+                    </div>
+                    <div class="bg-white/10 p-3 rounded-2xl">
+                        <p class="text-[10px] text-blue-100 uppercase tracking-wider mb-1">Pengeluaran</p>
+                        <p id="total-expense" class="font-bold text-sm text-red-300">Rp 0</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-3 gap-3">
+                <button onclick="openAddModal('expense')" class="glass-card p-4 rounded-2xl flex flex-col items-center gap-2 active:scale-95 transition-all bg-red-500/10 border-red-500/20">
+                    <div class="p-2 bg-red-500 rounded-lg text-white">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M20 12H4"></path></svg>
+                    </div>
+                    <span class="text-xs font-semibold">Keluar</span>
+                </button>
+                <button onclick="openAddModal('income')" class="glass-card p-4 rounded-2xl flex flex-col items-center gap-2 active:scale-95 transition-all bg-green-500/10 border-green-500/20">
+                    <div class="p-2 bg-green-500 rounded-lg text-white">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4"></path></svg>
+                    </div>
+                    <span class="text-xs font-semibold">Masuk</span>
+                </button>
+                <button onclick="switchTab('portfolio')" class="glass-card p-4 rounded-2xl flex flex-col items-center gap-2 active:scale-95 transition-all bg-blue-500/10 border-blue-500/20">
+                    <div class="p-2 bg-blue-500 rounded-lg text-white">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
+                    </div>
+                    <span class="text-xs font-semibold">Crypto</span>
+                </button>
+            </div>
+
+            <div>
+                <h3 class="font-bold mb-4 flex items-center justify-between">
+                    <span>Aktivitas Terbaru</span>
+                    <button onclick="switchTab('history')" class="text-xs text-blue-400 font-medium">Lihat Semua</button>
+                </h3>
+                <div id="recent-transactions" class="space-y-3">
+                    <!-- Loaded dynamically -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Portfolio Tab -->
+        <section id="tab-portfolio" class="tab-content hidden space-y-6">
+            <div class="glass-card p-5 rounded-3xl">
+                <p class="text-xs text-slate-400 mb-1">Nilai Crypto saat ini</p>
+                <h2 id="crypto-wealth" class="text-2xl font-bold">Rp 0</h2>
+                <p id="crypto-pnl" class="text-sm font-medium mt-1">PnL: Rp 0 (0%)</p>
+            </div>
+            <div id="holdings-list" class="space-y-3">
+                <!-- Loaded dynamically -->
+            </div>
+        </section>
+
+        <!-- History Tab -->
+        <section id="tab-history" class="tab-content hidden space-y-4">
+            <div class="flex items-center gap-2 overflow-x-auto pb-2 hide-scrollbar">
+                <button class="px-4 py-2 glass-card rounded-full text-xs font-medium border-blue-500/50 bg-blue-500/10">Semua</button>
+                <button class="px-4 py-2 glass-card rounded-full text-xs font-medium text-slate-400">Masuk</button>
+                <button class="px-4 py-2 glass-card rounded-full text-xs font-medium text-slate-400">Keluar</button>
+                <button class="px-4 py-2 glass-card rounded-full text-xs font-medium text-slate-400">Crypto</button>
+            </div>
+            <div id="full-history" class="space-y-3">
+                <!-- Loaded dynamically -->
+            </div>
+        </section>
+
+        <!-- Settings Tab -->
+        <section id="tab-settings" class="tab-content hidden space-y-6">
+            <div class="glass-card rounded-3xl overflow-hidden">
+                <div class="p-3 border-b border-white/5 flex items-center justify-between">
+                    <span class="text-sm px-3">Dark Mode</span>
+                    <div class="w-10 h-6 bg-blue-500 rounded-full relative mr-3"><div class="absolute right-1 top-1 w-4 h-4 bg-white rounded-full"></div></div>
+                </div>
+                <div class="p-3 border-b border-white/5 flex items-center justify-between">
+                    <span class="text-sm px-3">Zona Waktu</span>
+                    <span class="text-xs text-slate-400 px-3">Asia/Jakarta</span>
+                </div>
+                <button onclick="confirmReset()" class="w-full text-left p-3 text-red-500 text-sm px-6 active:bg-red-500/10 active:scale-95 transition-all">
+                    🔴 Reset Hapus Semua Data
+                </button>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Bottom Nav -->
+    <nav class="fixed bottom-6 left-6 right-6 h-16 glass-card rounded-2xl flex items-center justify-around z-40 border-white/20">
+        <button onclick="switchTab('summary')" class="nav-btn flex flex-col items-center gap-1 text-blue-500" data-tab="summary">
+            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"></path></svg>
+            <span class="text-[10px]">Home</span>
+        </button>
+        <button onclick="switchTab('portfolio')" class="nav-btn flex flex-col items-center gap-1 text-slate-400" data-tab="portfolio">
+            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M21 16.5c0 .38-.21.71-.53.88l-7.97 4.44c-.31.17-.69.17-1 0L3.53 17.38c-.32-.17-.53-.5-.53-.88V7.5c0-.38.21-.71.53-.88l7.97-4.44c.31-.17.69-.17 1 0l7.97 4.44c.32.17.53.5.53.88v9z"></path></svg>
+            <span class="text-[10px]">Assets</span>
+        </button>
+        <button onclick="switchTab('history')" class="nav-btn flex flex-col items-center gap-1 text-slate-400" data-tab="history">
+            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"></path></svg>
+            <span class="text-[10px]">History</span>
+        </button>
+        <button onclick="switchTab('settings')" class="nav-btn flex flex-col items-center gap-1 text-slate-400" data-tab="settings">
+            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"></path></svg>
+            <span class="text-[10px]">Setup</span>
+        </button>
+    </nav>
+
+    <!-- Modals -->
+    <div id="modal-overlay" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden opacity-0 transition-opacity duration-300">
+        <div id="modal-container" class="fixed bottom-0 left-0 right-0 glass-card rounded-t-[40px] p-8 modal-animate-in border-t border-white/20">
+            <!-- Content Injected via JS -->
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div id="toast" class="fixed top-10 left-10 right-10 z-[100] transform -translate-y-20 transition-transform duration-300 pointer-events-none">
+        <div class="bg-blue-600 text-white p-4 rounded-2xl shadow-xl flex items-center gap-3">
+            <span id="toast-icon">✨</span>
+            <p id="toast-msg" class="text-sm font-medium"></p>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
