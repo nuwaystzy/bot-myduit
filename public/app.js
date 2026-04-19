@@ -162,6 +162,20 @@ window.onIconError = function(el) {
     if (fallback) fallback.style.display = 'flex';
 }
 
+const customIcons = {
+    'sol': 'https://upload.wikimedia.org/wikipedia/en/b/b9/Solana_logo.png',
+    'ton': 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/cb/The_Open_Network_logo.svg/512px-The_Open_Network_logo.svg.png',
+    'sui': 'https://cryptologos.cc/logos/sui-sui-logo.png',
+    'btc': 'https://assets.coincap.io/assets/icons/btc@2x.png',
+    'eth': 'https://assets.coincap.io/assets/icons/eth@2x.png',
+};
+
+function getCoinIconUrl(symbol) {
+    symbol = (symbol || '').toLowerCase();
+    if (customIcons[symbol]) return customIcons[symbol];
+    return `https://assets.coincap.io/assets/icons/${symbol}@2x.png`;
+}
+
 function renderHoldings(items) {
     const list = document.getElementById('holdings-list');
     
@@ -187,10 +201,10 @@ function renderHoldings(items) {
         return `
             <div class="glass-card p-4 rounded-2xl flex items-center justify-between mb-3 last:mb-0 shadow-lg border-white/5">
                 <div class="flex items-center gap-3">
-                    <div class="asset-icon bg-white/5 text-blue-400 overflow-hidden relative flex items-center justify-center">
-                        <img src="https://coinicons-api.vercel.app/api/icon/${symbol}" 
+                    <div class="asset-icon bg-white/5 text-blue-400 overflow-hidden relative flex items-center justify-center rounded-full">
+                        <img src="${getCoinIconUrl(symbol)}" 
                              onerror="onIconError(this)"
-                             class="w-9 h-9 object-contain p-1">
+                             class="w-10 h-10 object-cover scale-110">
                         <span style="display:none" class="absolute inset-0 flex items-center justify-center font-black text-xs">${h.asset.substring(0, 1)}</span>
                     </div>
                     <div>
@@ -224,9 +238,9 @@ function createTxRow(t) {
         const symbol = (t.asset || t.category || '').toLowerCase();
         iconHtml = `
             <div class="w-10 h-10 rounded-xl flex items-center justify-center bg-white/5 overflow-hidden border border-white/10 relative shadow-inner">
-                <img src="https://coinicons-api.vercel.app/api/icon/${symbol}" 
+                <img src="${getCoinIconUrl(symbol)}" 
                      onerror="onIconError(this)"
-                     class="w-7 h-7 object-contain">
+                     class="w-10 h-10 object-cover scale-110">
                 <span style="display:none" class="absolute inset-0 flex items-center justify-center text-xs font-black">${symbol.substring(0, 1).toUpperCase()}</span>
             </div>
         `;
@@ -258,6 +272,24 @@ function getTransactionIcon(cat, type) {
     if (cat.includes('transport') || cat.includes('gojek')) return '🚗';
     if (cat.includes('tagihan') || cat.includes('listrik')) return '📄';
     return '📝';
+}
+
+function renderRecent(txs) {
+    if (!recentTxEl) return;
+    if (!txs || txs.length === 0) {
+        recentTxEl.innerHTML = '<p class="text-xs text-slate-500 italic text-center py-4">Belum ada aktivitas terbaru.</p>';
+        return;
+    }
+    recentTxEl.innerHTML = txs.map(t => createTxRow(t)).join('');
+}
+
+function renderHistory(txs) {
+    if (!fullHistoryEl) return;
+    if (!txs || txs.length === 0) {
+        fullHistoryEl.innerHTML = '<p class="text-xs text-slate-500 italic text-center py-4">Belum ada riwayat transaksi.</p>';
+        return;
+    }
+    fullHistoryEl.innerHTML = txs.map(t => createTxRow(t)).join('');
 }
 
 function showLoading(isLoading) {
