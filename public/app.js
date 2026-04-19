@@ -230,49 +230,56 @@ function renderHoldings(items) {
 function createTxRow(t) {
     const isPositive = t.type === 'income' || t.type === 'buy'; 
     const isCrypto = t.type === 'buy' || t.type === 'sell';
-    const color = isPositive ? 'text-green-400' : 'text-red-400';
+    const color = isPositive ? 'text-green-500' : 'text-red-500';
     const sign = isPositive ? '+' : '-';
     
-    let iconHtml = `<div class="w-10 h-10 rounded-xl flex items-center justify-center bg-white/5 text-lg shadow-inner">${getTransactionIcon(t.category, t.type)}</div>`;
+    const rawDate = new Date(t.created_at);
+    const today = new Date();
+    const isToday = rawDate.getDate() === today.getDate() && rawDate.getMonth() === today.getMonth();
+    const dateStr = isToday ? 'Hari Ini' : rawDate.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
+    const timeStr = rawDate.toLocaleTimeString(['id-ID', 'en-US'], {hour: '2-digit', minute:'2-digit'});
+    const noteStr = t.note ? `${t.note} • ` : '';
+
+    let iconHtml = '';
     
     if (isCrypto) {
         const symbol = (t.asset || t.category || '').toLowerCase();
         iconHtml = `
-            <div class="w-10 h-10 rounded-xl flex items-center justify-center bg-white/5 overflow-hidden border border-white/10 relative shadow-inner">
+            <div class="w-11 h-11 rounded-2xl flex items-center justify-center bg-[#1c1c1e] overflow-hidden border border-white/5 relative shadow-inner shrink-0">
                 <img src="${getCoinIconUrl(symbol)}" 
                      onerror="onIconError(this)"
-                     class="w-10 h-10 object-cover scale-110">
+                     class="w-11 h-11 object-cover scale-110">
                 <span style="display:none" class="absolute inset-0 flex items-center justify-center text-xs font-black">${symbol.substring(0, 1).toUpperCase()}</span>
+            </div>
+        `;
+    } else {
+        const iconColor = isPositive ? 'text-green-500' : 'text-red-500';
+        // Income = bag svg, Expense = money svg
+        const iconSvg = isPositive 
+            ? `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>` 
+            : `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path>`;
+            
+        iconHtml = `
+            <div class="w-11 h-11 rounded-2xl flex items-center justify-center bg-[#1c1c1e] border border-white/5 shadow-inner shrink-0">
+                <svg class="w-5 h-5 ${iconColor}" fill="none" stroke="currentColor" viewBox="0 0 24 24">${iconSvg}</svg>
             </div>
         `;
     }
 
     return `
-        <div class="glass-card p-4 rounded-2xl flex items-center justify-between active:bg-white/5 transition-all mb-3 last:mb-0 shadow-md" onclick="openDetailModal('${t.id}')">
-            <div class="flex items-center gap-3">
+        <div class="bg-white/[0.03] p-4 rounded-[20px] flex items-center justify-between active:scale-[0.98] transition-all mb-3 last:mb-0 border border-white/5" onclick="openDetailModal('${t.id}')">
+            <div class="flex items-center gap-4">
                 ${iconHtml}
                 <div>
-                    <h4 class="font-black text-sm capitalize text-white">${t.category || t.asset || 'N/A'}</h4>
-                    <p class="text-[10px] text-slate-400 font-bold">${new Date(t.created_at).toLocaleDateString()}</p>
+                    <h4 class="font-bold text-[14px] capitalize text-white tracking-wide">${t.category || t.asset || 'N/A'}</h4>
+                    <p class="text-[11px] text-white/40 mt-1 uppercase tracking-wider">${noteStr}${dateStr}, ${timeStr.replace('.', ':')}</p>
                 </div>
             </div>
             <div class="text-right">
-                <p class="font-black text-sm ${color}">${sign} ${formatIDR(t.amount_rp)}</p>
-                <p class="text-[10px] text-slate-400 font-bold uppercase">${t.type}</p>
+                <p class="font-black text-[14px] tracking-wide ${color}">${sign}${formatIDR(t.amount_rp)}</p>
             </div>
         </div>
     `;
-}
-
-function getTransactionIcon(cat, type) {
-    if (type === 'income' || type === 'sell') return '💰';
-    cat = (cat || '').toLowerCase();
-    if (cat.includes('makan')) return '🍲';
-    if (cat.includes('kopi') || cat.includes('minum')) return '☕';
-    if (cat.includes('gaji') || cat.includes('masuk')) return '💰';
-    if (cat.includes('transport') || cat.includes('gojek')) return '🚗';
-    if (cat.includes('tagihan') || cat.includes('listrik')) return '📄';
-    return '📝';
 }
 
 function renderRecent(txs) {
