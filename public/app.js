@@ -95,6 +95,7 @@ async function fetchHistory() {
         allTransactions = await res.json();
         renderRecent(allTransactions.slice(0, 5));
         renderHistory(allTransactions);
+        calculateTimeframeReports(allTransactions);
     } catch (err) {
         console.error('Fetch History Error:', err);
     }
@@ -290,6 +291,57 @@ function renderHistory(txs) {
         return;
     }
     fullHistoryEl.innerHTML = txs.map(t => createTxRow(t)).join('');
+}
+
+function calculateTimeframeReports(txs) {
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    
+    // First day of this week (assuming Monday is start of week)
+    const dayOfWeek = now.getDay() || 7; 
+    const firstDayOfWeek = new Date(today);
+    firstDayOfWeek.setDate(today.getDate() - dayOfWeek + 1);
+
+    // First day of this month
+    const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+    let dayIn = 0, dayOut = 0;
+    let weekIn = 0, weekOut = 0;
+    let monthIn = 0, monthOut = 0;
+
+    txs.forEach(t => {
+        const d = new Date(t.created_at);
+        const amount = Number(t.amount_rp) || 0;
+        
+        // Exclude internal transfers or non-cashflow crypto if needed, but per original app we consider sell as income, buy as expense.
+        const isIncome = t.type === 'income' || t.type === 'sell';
+        const isExpense = t.type === 'expense' || t.type === 'buy';
+
+        if (d >= today) {
+            if (isIncome) dayIn += amount;
+            if (isExpense) dayOut += amount;
+        }
+        if (d >= firstDayOfWeek) {
+            if (isIncome) weekIn += amount;
+            if (isExpense) weekOut += amount;
+        }
+        if (d >= firstDayOfMonth) {
+            if (isIncome) monthIn += amount;
+            if (isExpense) monthOut += amount;
+        }
+    });
+
+    const setEl = (id, val) => {
+        const el = document.getElementById(id);
+        if (el) el.innerText = formatIDR(val);
+    };
+
+    setEl('rep-day-in', dayIn);
+    setEl('rep-day-out', dayOut);
+    setEl('rep-week-in', weekIn);
+    setEl('rep-week-out', weekOut);
+    setEl('rep-month-in', monthIn);
+    setEl('rep-month-out', monthOut);
 }
 
 function showLoading(isLoading) {
