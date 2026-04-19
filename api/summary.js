@@ -20,9 +20,10 @@ export default async function handler(req, res) {
     const internalId = user.id;
 
     // 2. Fetch data in parallel
-    const [cashflow, portfolio] = await Promise.all([
+    const [cashflow, portfolio, categories] = await Promise.all([
       getCashflowSummary(internalId, 'month'),
-      getPortfolioSummary(internalId)
+      getPortfolioSummary(internalId),
+      getCategoryStats(internalId, 'month')
     ]);
 
     const totalWealth = cashflow.net + portfolio.totalCurrentValue;
@@ -34,7 +35,8 @@ export default async function handler(req, res) {
       expense: cashflow.expense,
       crypto_value: portfolio.totalCurrentValue,
       crypto_pnl: portfolio.totalPnL,
-      crypto_pnl_percent: portfolio.totalPnLPercent
+      crypto_pnl_percent: portfolio.totalPnLPercent,
+      categories: categories
     });
   } catch (error) {
     console.error('Summary API Error:', error);

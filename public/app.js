@@ -16,6 +16,8 @@ const coinNames = {
     'BNB': 'Binance Coin',
     'USDT': 'Tether',
     'USDC': 'USD Coin',
+    'TON': 'Toncoin',
+    'SUI': 'Sui',
     'IDR': 'Rupiah'
 };
 
@@ -28,13 +30,13 @@ const holdingsListEl = document.getElementById('holdings-list');
 const fullHistoryEl = document.getElementById('full-history');
 const cryptoWealthEl = document.getElementById('crypto-wealth');
 const cryptoPnLEl = document.getElementById('crypto-pnl');
+const categoryReportEl = document.getElementById('category-report');
 
 // Main Initialization
 function init() {
     tg.ready();
     tg.expand();
     
-    // Gunakan keyword 'bg_color' untuk menghilangkan bar biru dan menyatu dengan tema
     tg.setHeaderColor('bg_color');
     tg.setBackgroundColor('bg_color');
 
@@ -81,6 +83,8 @@ async function fetchSummary() {
         const pnlColor = pnl >= 0 ? 'text-green-400' : 'text-red-400';
         cryptoPnLEl.className = `text-sm font-medium mt-1 ${pnlColor}`;
         cryptoPnLEl.innerText = `PnL: ${formatIDR(pnl)} (${pnlPct.toFixed(2)}%)`;
+
+        renderCategoryReport(data.categories || [], data.expense);
     } catch (err) {
         console.error('Fetch Summary Error:', err);
     }
@@ -105,6 +109,31 @@ async function fetchHoldings() {
     } catch (err) {
         console.error('Fetch Holdings Error:', err);
     }
+}
+
+function renderCategoryReport(categories, totalExpense) {
+    if (!categories.length) {
+        categoryReportEl.innerHTML = '<p class="text-xs text-slate-500 italic">Belum ada pengeluaran bulan ini.</p>';
+        return;
+    }
+
+    const colors = ['bg-blue-500', 'bg-purple-500', 'bg-pink-500', 'bg-orange-500', 'bg-teal-500'];
+    
+    categoryReportEl.innerHTML = categories.map((cat, i) => {
+        const pct = totalExpense > 0 ? (cat.amount / totalExpense) * 100 : 0;
+        const color = colors[i % colors.length];
+        return `
+            <div class="space-y-1">
+                <div class="flex items-center justify-between text-xs">
+                    <span class="font-medium text-slate-300 capitalize">${cat.category}</span>
+                    <span class="font-bold text-slate-100">${pct.toFixed(0)}%</span>
+                </div>
+                <div class="w-full h-1.5 bg-white/5 rounded-full overflow-hidden">
+                    <div class="${color} h-full rounded-full" style="width: ${pct}%"></div>
+                </div>
+            </div>
+        `;
+    }).join('');
 }
 
 function filterHistory(category, btn) {
@@ -139,10 +168,10 @@ function renderHoldings(items) {
         <div class="glass-card p-4 rounded-2xl flex items-center justify-between border-blue-500/10 mb-3">
             <div class="flex items-center gap-3">
                 <div class="asset-icon bg-red-500/20 text-red-500">
-                    <img src="https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/idr.png" 
+                    <img src="https://coinicons-api.vercel.app/api/icon/idr" 
                          onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'"
-                         class="w-8 h-8">
-                    <span style="display:none">Rp</span>
+                         class="w-10 h-10 object-contain">
+                    <span style="display:none" class="flex items-center justify-center w-full h-full">Rp</span>
                 </div>
                 <div>
                     <h4 class="font-bold text-sm text-white">IDR</h4>
@@ -162,10 +191,10 @@ function renderHoldings(items) {
         return `
             <div class="glass-card p-4 rounded-2xl flex items-center justify-between mb-3 last:mb-0">
                 <div class="flex items-center gap-3">
-                    <div class="asset-icon bg-blue-500/20 text-blue-400">
-                        <img src="https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/${symbol}.png" 
+                    <div class="asset-icon bg-blue-500/20 text-blue-400 overflow-hidden">
+                        <img src="https://coinicons-api.vercel.app/api/icon/${symbol}" 
                              onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'"
-                             class="w-8 h-8">
+                             class="w-10 h-10 object-contain">
                         <span style="display:none" class="flex items-center justify-center w-full h-full">${h.asset.substring(0, 1)}</span>
                     </div>
                     <div>
@@ -189,15 +218,28 @@ function renderHoldings(items) {
 
 function createTxRow(t) {
     const isPositive = t.type === 'income' || t.type === 'buy'; 
+    const isCrypto = t.type === 'buy' || t.type === 'sell';
     const color = isPositive ? 'text-green-400' : 'text-red-400';
     const sign = isPositive ? '+' : '-';
     
+    let iconHtml = `<div class="w-10 h-10 rounded-xl flex items-center justify-center bg-white/5 text-lg">${getTransactionIcon(t.category, t.type)}</div>`;
+    
+    if (isCrypto) {
+        const symbol = (t.asset || t.category).toLowerCase();
+        iconHtml = `
+            <div class="w-10 h-10 rounded-xl flex items-center justify-center bg-white/5 overflow-hidden border border-white/5">
+                <img src="https://coinicons-api.vercel.app/api/icon/${symbol}" 
+                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'"
+                     class="w-7 h-7 object-contain">
+                <span style="display:none" class="text-xs font-bold">${symbol.substring(0, 1).toUpperCase()}</span>
+            </div>
+        `;
+    }
+
     return `
         <div class="glass-card p-4 rounded-2xl flex items-center justify-between active:bg-white/5 transition-all mb-3 last:mb-0" onclick="openDetailModal('${t.id}')">
             <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl flex items-center justify-center bg-white/5 text-lg">
-                    ${getTransactionIcon(t.category, t.type)}
-                </div>
+                ${iconHtml}
                 <div>
                     <h4 class="font-bold text-sm capitalize text-white">${t.category || t.asset || 'N/A'}</h4>
                     <p class="text-[10px] text-slate-400">${new Date(t.created_at).toLocaleDateString()}</p>
