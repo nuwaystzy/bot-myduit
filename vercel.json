@@ -1,6 +1,0 @@
-{
-  "rewrites": [
-    { "source": "/webapp", "destination": "/webapp/index.html" },
-    { "source": "/webapp/", "destination": "/webapp/index.html" }
-  ]
-}
