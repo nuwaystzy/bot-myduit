@@ -93,10 +93,10 @@
         <!-- History Tab -->
         <section id="tab-history" class="tab-content hidden space-y-4">
             <div class="flex items-center gap-2 overflow-x-auto pb-2 hide-scrollbar">
-                <button class="px-4 py-2 glass-card rounded-full text-xs font-medium border-blue-500/50 bg-blue-500/10">Semua</button>
-                <button class="px-4 py-2 glass-card rounded-full text-xs font-medium text-slate-400">Masuk</button>
-                <button class="px-4 py-2 glass-card rounded-full text-xs font-medium text-slate-400">Keluar</button>
-                <button class="px-4 py-2 glass-card rounded-full text-xs font-medium text-slate-400">Crypto</button>
+                <button onclick="filterHistory('all', this)" class="filter-btn px-4 py-2 glass-card rounded-full text-xs font-medium border-blue-500/50 bg-blue-500/10 text-white">Semua</button>
+                <button onclick="filterHistory('income', this)" class="filter-btn px-4 py-2 glass-card rounded-full text-xs font-medium text-slate-400 border-transparent">Masuk</button>
+                <button onclick="filterHistory('expense', this)" class="filter-btn px-4 py-2 glass-card rounded-full text-xs font-medium text-slate-400 border-transparent">Keluar</button>
+                <button onclick="filterHistory('crypto', this)" class="filter-btn px-4 py-2 glass-card rounded-full text-xs font-medium text-slate-400 border-transparent">Crypto</button>
             </div>
             <div id="full-history" class="space-y-3">
                 <!-- Loaded dynamically -->

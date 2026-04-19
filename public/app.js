@@ -3,9 +3,10 @@ tg.expand();
 tg.ready();
 
 // State
-let userId = tg.initDataUnsafe?.user?.id || 123456; // Fallback for testing
+let userId = tg.initDataUnsafe?.user?.id || 123456;
 let userName = tg.initDataUnsafe?.user?.first_name || 'Guest';
 let userPhoto = tg.initDataUnsafe?.user?.photo_url || null;
+let allTransactions = []; 
 
 // UI Elements
 const totalWealthEl = document.getElementById('total-wealth');
@@ -22,33 +23,22 @@ function init() {
     tg.ready();
     tg.expand();
     
-    console.log('Final Init Data Check:', tg.initDataUnsafe);
+    // Hapus bar biru di paling atas
+    tg.setHeaderColor('#0f172a');
+    tg.setBackgroundColor('#0f172a');
 
-    // Deteksi User ID dengan hirarki: initData -> URL Param -> Fallback
     const user = tg.initDataUnsafe?.user;
     if (user && user.id) {
         userId = user.id;
         userName = user.first_name || 'User';
         if (user.photo_url) userPhoto = user.photo_url;
-    } else {
-        const urlParams = new URLSearchParams(window.location.search);
-        const paramId = urlParams.get('user_id');
-        if (paramId) userId = paramId;
     }
     
-    // Update Header UI segera
     document.getElementById('user-name').innerText = userName;
     if (userPhoto) document.getElementById('user-photo').src = userPhoto;
     
-    // Tampilkan loading skeleton
     showLoading(true);
-    
-    // Refresh data dengan retry singkat jika gagal (masalah jaringan)
-    refreshData().catch(() => {
-        setTimeout(refreshData, 1000);
-    }).finally(() => {
-        showLoading(false);
-    });
+    refreshData().finally(() => showLoading(false));
     
     document.getElementById('refresh-btn').onclick = () => {
         showLoading(true);
@@ -59,12 +49,11 @@ function init() {
 async function refreshData() {
     await Promise.all([
         fetchSummary(),
-        fetchTransactions(),
+        fetchHistory(),
         fetchHoldings()
     ]);
 }
 
-// API Calls
 async function fetchSummary() {
     try {
         const res = await fetch(`/api/summary?user_id=${userId}`);
@@ -80,21 +69,19 @@ async function fetchSummary() {
         const pnlColor = pnl >= 0 ? 'text-green-400' : 'text-red-400';
         cryptoPnLEl.className = `text-sm font-medium mt-1 ${pnlColor}`;
         cryptoPnLEl.innerText = `PnL: ${formatIDR(pnl)} (${pnlPct.toFixed(2)}%)`;
-        
     } catch (err) {
         console.error('Fetch Summary Error:', err);
     }
 }
 
-async function fetchTransactions() {
+async function fetchHistory() {
     try {
         const res = await fetch(`/api/transactions?user_id=${userId}`);
-        const data = await res.json();
-        
-        renderRecent(data.slice(0, 5));
-        renderHistory(data);
+        allTransactions = await res.json();
+        renderRecent(allTransactions.slice(0, 5));
+        renderHistory(allTransactions);
     } catch (err) {
-        console.error('Fetch Transactions Error:', err);
+        console.error('Fetch History Error:', err);
     }
 }
 
@@ -106,6 +93,22 @@ async function fetchHoldings() {
     } catch (err) {
         console.error('Fetch Holdings Error:', err);
     }
+}
+
+function filterHistory(category, btn) {
+    document.querySelectorAll('.filter-btn').forEach(b => {
+        b.classList.remove('bg-blue-500/10', 'border-blue-500/50', 'text-white');
+        b.classList.add('text-slate-400', 'border-transparent');
+    });
+    btn.classList.add('bg-blue-500/10', 'border-blue-500/50', 'text-white');
+    btn.classList.remove('text-slate-400', 'border-transparent');
+
+    let filtered = allTransactions;
+    if (category === 'income') filtered = allTransactions.filter(t => t.type === 'income');
+    if (category === 'expense') filtered = allTransactions.filter(t => t.type === 'expense');
+    if (category === 'crypto') filtered = allTransactions.filter(t => ['buy', 'sell'].includes(t.type));
+    
+    renderHistory(filtered);
 }
 
 // Rendering Logic
@@ -129,12 +132,12 @@ function renderHoldings(items) {
                     ${h.asset.substring(0, 1)}
                 </div>
                 <div>
-                    <h4 class="font-bold text-sm">${h.asset}</h4>
+                    <h4 class="font-bold text-sm text-white">${h.asset}</h4>
                     <p class="text-[10px] text-slate-400">${h.quantity} UNIT</p>
                 </div>
             </div>
             <div class="text-right">
-                <p class="font-bold text-sm">${formatIDR(h.currentValue)}</p>
+                <p class="font-bold text-sm text-white">${formatIDR(h.currentValue)}</p>
                 <p class="text-[10px] ${h.pnl >= 0 ? 'text-green-400' : 'text-red-400'}">
                     ${h.pnl >= 0 ? '+' : ''}${h.pnlPercent.toFixed(2)}%
                 </p>
@@ -144,9 +147,9 @@ function renderHoldings(items) {
 }
 
 function createTxRow(t) {
-    const isIncome = t.type === 'income' || t.type === 'sell';
-    const color = isIncome ? 'text-green-400' : 'text-red-400';
-    const sign = isIncome ? '+' : '-';
+    const isPositive = t.type === 'income' || t.type === 'buy'; 
+    const color = isPositive ? 'text-green-400' : 'text-red-400';
+    const sign = isPositive ? '+' : '-';
     
     return `
         <div class="glass-card p-4 rounded-2xl flex items-center justify-between active:bg-white/5 transition-all" onclick="openDetailModal('${t.id}')">
@@ -155,7 +158,7 @@ function createTxRow(t) {
                     ${getTransactionIcon(t.category)}
                 </div>
                 <div>
-                    <h4 class="font-bold text-sm capitalize">${t.category || t.asset || 'N/A'}</h4>
+                    <h4 class="font-bold text-sm capitalize text-white">${t.category || t.asset || 'N/A'}</h4>
                     <p class="text-[10px] text-slate-400">${new Date(t.created_at).toLocaleDateString()}</p>
                 </div>
             </div>
@@ -166,6 +169,159 @@ function createTxRow(t) {
         </div>
     `;
 }
+
+// Navigation
+function switchTab(tabId) {
+    document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+    document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+    
+    document.querySelectorAll('.nav-btn').forEach(btn => {
+        btn.classList.remove('text-blue-500');
+        btn.classList.add('text-slate-400');
+        if (btn.dataset.tab === tabId) {
+            btn.classList.add('text-blue-500');
+            btn.classList.remove('text-slate-400');
+        }
+    });
+
+    if (tabId === 'history' || tabId === 'portfolio') refreshData();
+}
+
+// Modals
+function openAddModal(type) {
+    const isIncome = type === 'income';
+    const title = isIncome ? 'Tambah Pemasukan' : 'Catat Pengeluaran';
+    
+    const content = `
+        <div class="flex items-center justify-between mb-6">
+            <h3 class="text-xl font-bold">${title}</h3>
+            <button onclick="closeModal()" class="text-slate-400">Tutup</button>
+        </div>
+        <form id="add-form" class="space-y-4">
+            <input type="hidden" name="type" value="${type}">
+            <div>
+                <label class="text-xs text-slate-400 mb-1 block uppercase font-bold tracking-wider">Nominal (Rp)</label>
+                <input type="number" name="amount_rp" autofocus required class="w-full bg-white/5 border border-white/10 p-4 rounded-2xl font-bold text-lg focus:border-blue-500 outline-none text-white" placeholder="0">
+            </div>
+            <div>
+                <label class="text-xs text-slate-400 mb-1 block uppercase font-bold tracking-wider">Kategori / Aset</label>
+                <input type="text" name="category" required class="w-full bg-white/5 border border-white/10 p-4 rounded-2xl focus:border-blue-500 outline-none text-white" placeholder="Misal: Makan, Gaji, BTC">
+            </div>
+            <div>
+                <label class="text-xs text-slate-400 mb-1 block uppercase font-bold tracking-wider">Catatan (Opsional)</label>
+                <textarea name="note" class="w-full bg-white/5 border border-white/10 p-4 rounded-2xl focus:border-blue-500 outline-none h-20 text-white" placeholder="Ketik catatan..."></textarea>
+            </div>
+            <button type="submit" class="w-full py-4 bg-blue-600 rounded-2xl font-bold text-lg active:scale-95 transition-transform mt-4 text-white">Simpan Transaksi</button>
+        </form>
+    `;
+    
+    showModal(content);
+    
+    document.getElementById('add-form').onsubmit = async (e) => {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        const body = Object.fromEntries(formData.entries());
+        body.user_id = userId;
+        
+        if (['BTC', 'ETH', 'SOL', 'BNB'].includes(body.category.toUpperCase())) {
+            body.asset = body.category.toUpperCase();
+            body.type = isIncome ? 'sell' : 'buy';
+        }
+
+        try {
+            const res = await fetch('/api/add', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body)
+            });
+            const result = await res.json();
+            if (result.success) {
+                showToast('Transaksi disimpan!', '✅');
+                closeModal();
+                refreshData();
+            } else {
+                showToast(result.error || 'Gagal menyimpan', '❌');
+            }
+        } catch (err) {
+            showToast('Network Error', '❌');
+        }
+    }
+}
+
+function confirmReset() {
+    const content = `
+        <div class="text-center space-y-6">
+            <div class="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto text-3xl">⚠️</div>
+            <h3 class="text-xl font-bold text-white">Hapus Semua Data?</h3>
+            <p class="text-sm text-slate-400">Tindakan ini tidak bisa dibatalkan secara manual. Seluruh riwayat transaksi akan hilang.</p>
+            <div class="flex gap-4">
+                <button onclick="closeModal()" class="flex-1 py-4 glass-card rounded-2xl font-bold text-white">Batal</button>
+                <button id="reset-final-btn" class="flex-1 py-4 bg-red-600 rounded-2xl font-bold text-white">Ya, Hapus</button>
+            </div>
+        </div>
+    `;
+    showModal(content);
+    document.getElementById('reset-final-btn').onclick = async () => {
+        const res = await fetch('/api/reset', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ user_id: userId })
+        });
+        if (res.ok) {
+            showToast('Data direset!', '🧹');
+            closeModal();
+            refreshData();
+        }
+    };
+}
+
+function showModal(content) {
+    const overlay = document.getElementById('modal-overlay');
+    const container = document.getElementById('modal-container');
+    container.innerHTML = content;
+    overlay.classList.remove('hidden');
+    setTimeout(() => overlay.classList.remove('opacity-0'), 10);
+}
+
+function closeModal() {
+    const overlay = document.getElementById('modal-overlay');
+    overlay.classList.add('opacity-0');
+    setTimeout(() => overlay.classList.add('hidden'), 300);
+}
+
+function showToast(msg, icon = '✨') {
+    const toast = document.getElementById('toast');
+    document.getElementById('toast-msg').innerText = msg;
+    document.getElementById('toast-icon').innerText = icon;
+    toast.classList.remove('-translate-y-20');
+    setTimeout(() => toast.classList.add('-translate-y-20'), 2500);
+}
+
+function formatIDR(val) {
+    return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(val || 0);
+}
+
+function getTransactionIcon(cat) {
+    cat = (cat || '').toLowerCase();
+    if (cat.includes('makan')) return '🍲';
+    if (cat.includes('kopi') || cat.includes('minum')) return '☕';
+    if (cat.includes('gaji') || cat.includes('masuk')) return '💰';
+    if (cat.includes('transport') || cat.includes('gojek')) return '🚗';
+    if (cat.includes('tagihan') || cat.includes('listrik')) return '📄';
+    return '📝';
+}
+
+function showLoading(isLoading) {
+    const main = document.querySelector('main');
+    if (isLoading) {
+        main.classList.add('status-loading');
+    } else {
+        main.classList.remove('status-loading');
+    }
+}
+
+// Start
+init();
 
 // Navigation
 function switchTab(tabId) {
