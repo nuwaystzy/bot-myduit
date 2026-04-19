@@ -249,7 +249,7 @@ function createTxRow(t) {
         iconHtml = `
             <div class="w-11 h-11 rounded-2xl flex items-center justify-center bg-[#1c1c1e] border border-white/5 relative shadow-inner shrink-0 group">
                 <!-- Flaticon Crypto Buy/Sell Mask -->
-                <div class="w-6 h-6 ${cryptoColor}" style="-webkit-mask: url('https://cdn-icons-png.flaticon.com/512/9478/9478639.png') no-repeat center / contain; mask: url('https://cdn-icons-png.flaticon.com/512/9478/9478639.png') no-repeat center / contain;"></div>
+                <div class="w-6 h-6 ${cryptoColor}" style="-webkit-mask: url('/crypto-icon-mask.png') no-repeat center / contain; mask: url('/crypto-icon-mask.png') no-repeat center / contain;"></div>
                 
                 <!-- Tiny coin overlay -->
                 <img src="${getCoinIconUrl((t.asset || t.category || '').toLowerCase())}" class="absolute -bottom-1 -right-1 w-4 h-4 rounded-full border border-[#171717] opacity-80" onerror="this.style.display='none'">
