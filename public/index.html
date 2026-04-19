@@ -29,21 +29,37 @@
         
         <!-- Tab: Dashboard -->
         <div id="tab-dashboard" class="tab-content space-y-6">
-            <!-- Wealth Card -->
-            <div class="crypto-card p-6 rounded-3xl shadow-2xl relative overflow-hidden">
-                <div class="absolute -right-10 -top-10 w-40 h-40 bg-white/10 rounded-full blur-3xl"></div>
+            <!-- Wealth Card Improved -->
+            <div class="px-6 py-8 rounded-3xl shadow-2xl relative overflow-hidden bg-gradient-to-br from-blue-500 to-blue-800 border border-white/10">
+                <!-- Decorative Circles -->
+                <div class="absolute -right-8 -top-8 w-40 h-40 bg-white/20 rounded-full blur-3xl"></div>
+                <div class="absolute -left-10 -bottom-10 w-32 h-32 bg-blue-400/30 rounded-full blur-2xl"></div>
+                
                 <div class="relative z-10">
-                    <p class="text-white/70 text-xs font-bold uppercase tracking-widest mb-1">Total Saldo (Net Worth)</p>
-                    <h2 id="total-wealth" class="text-4xl font-bold">Rp 0</h2>
+                    <p class="text-white/80 text-sm font-medium mb-1">Total Saldo</p>
+                    <h2 id="total-wealth" class="text-4xl font-black text-white drop-shadow-md tracking-tight">Rp 0</h2>
                     
-                    <div class="mt-8 grid grid-cols-2 gap-4">
-                        <div class="bg-white/10 backdrop-blur-md p-3 rounded-2xl">
-                            <p class="text-white/50 text-[10px] uppercase font-bold mb-1">Pemasukan</p>
-                            <p id="total-income" class="text-green-400 font-bold text-sm">Rp 0</p>
+                    <div class="mt-8 bg-black/25 backdrop-blur-md p-4 rounded-2xl flex items-center justify-between border border-white/10 shadow-inner">
+                        <div class="flex items-center gap-3 w-1/2">
+                            <div class="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center">
+                                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M7 17L17 7M17 7H9M17 7v8"></path></svg>
+                            </div>
+                            <div>
+                                <p class="text-white/70 text-[10px] uppercase font-bold tracking-wider mb-0.5">Pemasukan</p>
+                                <p id="total-income" class="text-white font-black text-sm">Rp 0</p>
+                            </div>
                         </div>
-                        <div class="bg-white/10 backdrop-blur-md p-3 rounded-2xl">
-                            <p class="text-white/50 text-[10px] uppercase font-bold mb-1">Pengeluaran</p>
-                            <p id="total-expense" class="text-red-400 font-bold text-sm">Rp 0</p>
+                        
+                        <div class="w-px h-10 bg-white/20 mx-2"></div>
+                        
+                        <div class="flex items-center gap-3 w-1/2 pl-2">
+                            <div class="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center">
+                                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M7 7l10 10m0 0H9m8 0V9"></path></svg>
+                            </div>
+                            <div>
+                                <p class="text-white/70 text-[10px] uppercase font-bold tracking-wider mb-0.5">Pengeluaran</p>
+                                <p id="total-expense" class="text-white font-black text-sm">Rp 0</p>
+                            </div>
                         </div>
                     </div>
                 </div>
