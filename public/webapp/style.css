@@ -1,40 +1,48 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
+:root {
+    --bg-dark: #0f172a;
+    --card-bg: rgba(30, 41, 59, 0.7);
+    --accent-blue: #3b82f6;
+    --text-primary: #ffffff;
+    --text-secondary: #94a3b8;
+}
+
 body {
     font-family: 'Inter', sans-serif;
     -webkit-tap-highlight-color: transparent;
-}
-
-.glass-card {
-    background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.tab-active {
-    color: #3b82f6;
-    border-bottom: 2px solid #3b82f6;
+    background-color: var(--bg-dark);
+    color: var(--text-primary);
 }
 
 .gradient-bg {
-    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+    background: radial-gradient(circle at top right, #1e293b, #0f172a);
+    background-attachment: fixed;
+}
+
+.glass-card {
+    background: var(--card-bg);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
 }
 
 .crypto-card {
-    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+    box-shadow: 0 20px 40px -15px rgba(37, 99, 235, 0.4);
+}
+
+.nav-active {
+    color: var(--accent-blue) !important;
+    transform: translateY(-2px);
+}
+
+.tab-content {
+    transition: all 0.3s ease;
 }
 
 .hide-scrollbar::-webkit-scrollbar {
     display: none;
-}
-
-.modal-animate-in {
-    animation: slideUp 0.3s ease-out forwards;
-}
-
-@keyframes slideUp {
-    from { transform: translateY(100%); }
-    to { transform: translateY(0); }
 }
 
 .skeleton {
@@ -45,4 +53,9 @@ body {
 
 @keyframes loading {
     to { background-position: -200% 0; }
+}
+
+.status-loading {
+    opacity: 0.5;
+    pointer-events: none;
 }

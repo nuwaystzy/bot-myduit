@@ -19,15 +19,37 @@ const cryptoPnLEl = document.getElementById('crypto-pnl');
 
 // Main Initialization
 function init() {
+    tg.ready();
+    tg.expand();
+    
+    // Log debug (bisa dilihat di Inspect)
+    console.log('Init Data:', tg.initDataUnsafe);
+
+    const user = tg.initDataUnsafe?.user;
+    if (user) {
+        userId = user.id;
+        userName = user.first_name;
+        if (user.photo_url) userPhoto = user.photo_url;
+    } else {
+        // Coba ambil dari URL param jika bot ngirim manual
+        const urlParams = new URLSearchParams(window.location.search);
+        const paramId = urlParams.get('user_id');
+        if (paramId) userId = paramId;
+    }
+    
     document.getElementById('user-name').innerText = userName;
     if (userPhoto) document.getElementById('user-photo').src = userPhoto;
     
-    refreshData();
+    // Tampilkan loading skeleton
+    showLoading(true);
     
-    // Refresh button
+    refreshData().finally(() => {
+        showLoading(false);
+    });
+    
     document.getElementById('refresh-btn').onclick = () => {
-        showToast('Refreshing data...', '🔄');
-        refreshData();
+        showLoading(true);
+        refreshData().finally(() => showLoading(false));
     };
 }
 
