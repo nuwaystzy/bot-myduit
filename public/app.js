@@ -507,6 +507,90 @@ function openAddModal(type) {
     }
 }
 
+function openCryptoModal(action) {
+    const isBuy = action === 'buy';
+    const title = isBuy ? 'Beli Kripto' : 'Jual Kripto';
+    const colorBtn = isBuy ? 'bg-green-600' : 'bg-red-600';
+    
+    const content = `
+        <div class="flex items-center justify-between mb-6">
+            <h3 class="text-xl font-black text-white flex items-center gap-2"><span class="text-2xl">${isBuy ? '📈' : '📉'}</span> ${title}</h3>
+            <button onclick="closeModal()" class="text-slate-400">Tutup</button>
+        </div>
+        <form id="crypto-form" class="space-y-4">
+            <input type="hidden" name="type" value="${action}">
+            <input type="hidden" name="category" value="Crypto">
+            
+            <div>
+                <label class="text-[10px] text-slate-400 mb-1 block uppercase font-black tracking-widest">Pilih Koin</label>
+                <select name="asset" required class="w-full bg-white/5 border border-white/10 p-4 rounded-2xl font-black text-xl focus:border-blue-500 outline-none text-white appearance-none">
+                    <option value="BTC" class="bg-slate-800">Bitcoin (BTC)</option>
+                    <option value="ETH" class="bg-slate-800">Ethereum (ETH)</option>
+                    <option value="SOL" class="bg-slate-800">Solana (SOL)</option>
+                    <option value="BNB" class="bg-slate-800">Binance Coin (BNB)</option>
+                    <option value="TON" class="bg-slate-800">Toncoin (TON)</option>
+                    <option value="SUI" class="bg-slate-800">Sui (SUI)</option>
+                </select>
+            </div>
+            
+            <div class="flex gap-4">
+                <div class="flex-1">
+                    <label class="text-[10px] text-slate-400 mb-1 block uppercase font-black tracking-widest">Total Harga (Rp)</label>
+                    <input type="number" name="amount_rp" required class="w-full bg-white/5 border border-white/10 p-4 rounded-2xl font-black text-lg focus:border-blue-500 outline-none text-white shadow-inner" placeholder="0">
+                </div>
+                <div class="flex-1">
+                    <label class="text-[10px] text-slate-400 mb-1 block uppercase font-black tracking-widest">Jumlah Token</label>
+                    <input type="number" name="quantity" step="any" required class="w-full bg-white/5 border border-white/10 p-4 rounded-2xl font-black text-lg focus:border-blue-500 outline-none text-white shadow-inner" placeholder="0.00">
+                </div>
+            </div>
+            
+            <div>
+                <label class="text-[10px] text-slate-400 mb-1 block uppercase font-black tracking-widest">Catatan Tambahan</label>
+                <input type="text" name="note" class="w-full bg-white/5 border border-white/10 p-4 rounded-2xl focus:border-blue-500 outline-none text-white font-bold" placeholder="DCA Bulanan...">
+            </div>
+            
+            <button type="submit" id="btn-submit-crypto" class="w-full py-5 ${colorBtn} rounded-3xl font-black text-lg active:scale-95 transition-all mt-4 text-white shadow-2xl disabled:opacity-50 disabled:scale-100 disabled:cursor-not-allowed">Konfirmasi ${isBuy ? 'Pembelian' : 'Penjualan'}</button>
+        </form>
+    `;
+    
+    showModal(content);
+    
+    document.getElementById('crypto-form').onsubmit = async (e) => {
+        e.preventDefault();
+        
+        const submitBtn = document.getElementById('btn-submit-crypto');
+        submitBtn.disabled = true;
+        const originalText = submitBtn.innerText;
+        submitBtn.innerText = 'Memproses...';
+        
+        const formData = new FormData(e.target);
+        const body = Object.fromEntries(formData.entries());
+        body.user_id = userId;
+
+        try {
+            const res = await fetch('/api/add', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body)
+            });
+            const result = await res.json();
+            if (result.success) {
+                showToast('Transaksi Berhasil!', '✅');
+                closeModal();
+                refreshData();
+            } else {
+                showToast(result.error || 'Gagal menyimpan', '❌');
+                submitBtn.disabled = false;
+                submitBtn.innerText = originalText;
+            }
+        } catch (err) {
+            showToast('Network Error', '❌');
+            submitBtn.disabled = false;
+            submitBtn.innerText = originalText;
+        }
+    }
+}
+
 function confirmReset() {
     const content = `
         <div class="text-center space-y-6">
