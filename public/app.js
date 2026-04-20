@@ -520,7 +520,7 @@ function formatIDR(val) {
 }
 
 function openDetailModal(id) {
-    showToast('Detail ID: ' + id.substring(0,8), 'ℹ️');
+    // showToast('Detail ID: ' + id.substring(0,8), 'ℹ️');
 }
 
 init();
