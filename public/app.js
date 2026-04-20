@@ -488,6 +488,30 @@ function confirmReset() {
     };
 }
 
+async function triggerTestReminder() {
+    const btn = document.getElementById('btn-test-reminder');
+    if (!btn) return;
+    
+    const oriText = btn.innerText;
+    btn.innerText = '⏳';
+    btn.disabled = true;
+
+    try {
+        const res = await fetch('/api/cron');
+        const data = await res.json();
+        if (data.success) {
+            showToast('Pengingat dikirim ke bot!', '✨');
+        } else {
+            showToast('Gagal mengirim.', '❌');
+        }
+    } catch(err) {
+        showToast('Error koneksi.', '❌');
+    }
+    
+    btn.innerText = oriText;
+    btn.disabled = false;
+}
+
 function showModal(content) {
     const overlay = document.getElementById('modal-overlay');
     const container = document.getElementById('modal-container');

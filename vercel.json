@@ -3,5 +3,11 @@
   "rewrites": [
     { "source": "/webapp", "destination": "/webapp/index.html" },
     { "source": "/webapp/", "destination": "/webapp/index.html" }
+  ],
+  "crons": [
+    {
+      "path": "/api/cron",
+      "schedule": "0 13 * * *"
+    }
   ]
 }
