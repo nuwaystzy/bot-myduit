@@ -9,7 +9,16 @@ export default async function handler(req, res) {
         return res.status(500).json({ error: error.message });
     }
 
-    const msg = `Jangan lupa catat transaksi hari ini 📒\n\nHari ini udah keluar duit berapa?\nYuk catat dulu 👀`;
+    const messages = [
+        "Reminder: waktunya update catatan keuangan hari ini.",
+        "Hari ini udah keluar duit berapa?\nYuk catat dulu 👀",
+        "Jangan lupa catat transaksi hari ini 📒",
+        "Duit keluar diam-diam itu bahaya 😏\nCatat sekarang sebelum lupa."
+    ];
+    
+    // Pilih pesan berdasarkan hari (round-robin berulang tiap 4 hari)
+    const dayIndex = Math.floor(Date.now() / 86400000);
+    const msg = messages[dayIndex % messages.length];
     
     let sent = 0;
     for (const u of (users || [])) {
