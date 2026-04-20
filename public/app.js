@@ -68,8 +68,8 @@ async function init() {
 }
 
 async function refreshData() {
-    await fetchSummary();
     await Promise.all([
+        fetchSummary(),
         fetchHistory(),
         fetchHoldings()
     ]);
@@ -533,23 +533,12 @@ function openCryptoModal(action) {
                 </select>
             </div>
             
-            <div class="flex gap-4">
-                <div class="flex-1">
-                    <label class="text-[10px] text-slate-400 mb-1 block uppercase font-black tracking-widest">Total Harga (Rp)</label>
-                    <input type="number" name="amount_rp" required class="w-full bg-white/5 border border-white/10 p-4 rounded-2xl font-black text-lg focus:border-blue-500 outline-none text-white shadow-inner" placeholder="0">
-                </div>
-                <div class="flex-1">
-                    <label class="text-[10px] text-slate-400 mb-1 block uppercase font-black tracking-widest">Jumlah Token</label>
-                    <input type="number" name="quantity" step="any" required class="w-full bg-white/5 border border-white/10 p-4 rounded-2xl font-black text-lg focus:border-blue-500 outline-none text-white shadow-inner" placeholder="0.00">
-                </div>
-            </div>
-            
             <div>
-                <label class="text-[10px] text-slate-400 mb-1 block uppercase font-black tracking-widest">Catatan Tambahan</label>
-                <input type="text" name="note" class="w-full bg-white/5 border border-white/10 p-4 rounded-2xl focus:border-blue-500 outline-none text-white font-bold" placeholder="DCA Bulanan...">
+                <label class="text-[10px] text-slate-400 mb-1 block uppercase font-black tracking-widest">Total Harga (Rp)</label>
+                <input type="number" name="amount_rp" required class="w-full bg-white/5 border border-white/10 p-4 rounded-2xl font-black text-lg focus:border-blue-500 outline-none text-white shadow-inner" placeholder="0">
             </div>
             
-            <button type="submit" id="btn-submit-crypto" class="w-full py-5 ${colorBtn} rounded-3xl font-black text-lg active:scale-95 transition-all mt-4 text-white shadow-2xl disabled:opacity-50 disabled:scale-100 disabled:cursor-not-allowed">Konfirmasi ${isBuy ? 'Pembelian' : 'Penjualan'}</button>
+            <button type="submit" id="btn-submit-crypto" class="w-full py-5 ${colorBtn} rounded-3xl font-black text-lg active:scale-95 transition-all mt-6 text-white shadow-2xl disabled:opacity-50 disabled:scale-100 disabled:cursor-not-allowed">Konfirmasi ${isBuy ? 'Pembelian' : 'Penjualan'}</button>
         </form>
     `;
     
