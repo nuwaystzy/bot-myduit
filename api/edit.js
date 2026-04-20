@@ -18,8 +18,7 @@ export default async function handler(req, res) {
       .from('transactions')
       .update({
         amount_rp: Number(amount_rp),
-        note: note,
-        updated_at: new Date()
+        note: note
       })
       .eq('id', id)
       .eq('user_id', user.id)
