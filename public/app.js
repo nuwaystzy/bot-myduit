@@ -414,7 +414,7 @@ function openAddModal(type) {
                 <label class="text-[10px] text-slate-400 mb-1 block uppercase font-black tracking-widest">Catatan</label>
                 <textarea name="note" class="w-full bg-white/5 border border-white/10 p-4 rounded-2xl focus:border-blue-500 outline-none h-20 text-white font-bold" placeholder="Ketik catatan..."></textarea>
             </div>
-            <button type="submit" class="w-full py-5 bg-blue-600 rounded-3xl font-black text-lg active:scale-95 transition-all mt-4 text-white shadow-2xl">Simpan Transaksi</button>
+            <button type="submit" id="btn-submit-tx" class="w-full py-5 bg-blue-600 rounded-3xl font-black text-lg active:scale-95 transition-all mt-4 text-white shadow-2xl disabled:opacity-50 disabled:scale-100 disabled:cursor-not-allowed">Simpan Transaksi</button>
         </form>
     `;
     
@@ -422,6 +422,12 @@ function openAddModal(type) {
     
     document.getElementById('add-form').onsubmit = async (e) => {
         e.preventDefault();
+        
+        const submitBtn = document.getElementById('btn-submit-tx');
+        submitBtn.disabled = true;
+        const originalText = submitBtn.innerText;
+        submitBtn.innerText = 'Menyimpan...';
+        
         const formData = new FormData(e.target);
         const body = Object.fromEntries(formData.entries());
         body.user_id = userId;
@@ -444,9 +450,13 @@ function openAddModal(type) {
                 refreshData();
             } else {
                 showToast(result.error || 'Gagal menyimpan', '❌');
+                submitBtn.disabled = false;
+                submitBtn.innerText = originalText;
             }
         } catch (err) {
             showToast('Network Error', '❌');
+            submitBtn.disabled = false;
+            submitBtn.innerText = originalText;
         }
     }
 }
