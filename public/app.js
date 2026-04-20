@@ -210,7 +210,7 @@ function renderHoldings(items) {
         const name = coinNames[h.asset] || h.asset;
         const symbol = h.asset.toLowerCase();
         return `
-            <div class="glass-card p-4 rounded-2xl flex items-center justify-between mb-3 last:mb-0 shadow-lg border-white/5">
+            <div class="glass-card py-3.5 px-4 rounded-[20px] flex items-center justify-between shadow-lg border-white/5">
                 <div class="flex items-center gap-3">
                     <div class="asset-icon bg-white/5 text-blue-400 overflow-hidden relative flex items-center justify-center rounded-full">
                         <img src="${getCoinIconUrl(symbol)}" 
@@ -280,7 +280,7 @@ function createTxRow(t) {
     }
 
     return `
-        <div class="bg-white/[0.03] p-4 rounded-[20px] flex items-center justify-between active:scale-[0.98] transition-all mb-3 last:mb-0 border border-white/5 gap-2 w-full" onclick="openDetailModal('${t.id}')">
+        <div class="bg-white/[0.03] py-3.5 px-4 rounded-[20px] flex items-center justify-between active:scale-[0.98] transition-all border border-white/5 gap-2 w-full" onclick="openDetailModal('${t.id}')">
             <div class="flex items-center gap-3 flex-1 min-w-0">
                 ${iconHtml}
                 <div class="flex-1 min-w-0 text-left">
