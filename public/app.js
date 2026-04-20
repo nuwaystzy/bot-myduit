@@ -348,14 +348,12 @@ function renderDynamicReport(txs) {
         const d = new Date(t.created_at);
         if (d >= startDate) {
             const amount = Number(t.amount_rp) || 0;
-            if (t.type === 'income' || t.type === 'sell') {
+            if (t.type === 'income') {
                 income += amount;
-            } else if (t.type === 'expense' || t.type === 'buy') {
+            } else if (t.type === 'expense') {
                 expense += amount;
-                if (t.type === 'expense') {
-                    const cat = t.category || 'Lainnya';
-                    categoryStats[cat] = (categoryStats[cat] || 0) + amount;
-                }
+                const cat = t.category || 'Lainnya';
+                categoryStats[cat] = (categoryStats[cat] || 0) + amount;
             }
         }
     });
