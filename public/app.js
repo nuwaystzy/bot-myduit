@@ -511,8 +511,8 @@ function showToast(msg, icon = '✨') {
     const toast = document.getElementById('toast');
     document.getElementById('toast-msg').innerText = msg;
     document.getElementById('toast-icon').innerText = icon;
-    toast.classList.remove('-translate-y-20');
-    setTimeout(() => toast.classList.add('-translate-y-20'), 2500);
+    toast.classList.remove('-translate-y-40');
+    setTimeout(() => toast.classList.add('-translate-y-40'), 2500);
 }
 
 function formatIDR(val) {
