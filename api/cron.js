@@ -4,10 +4,13 @@ import { sendMessage } from '../lib/telegram.js';
 export default async function handler(req, res) {
     // Cron trigger dari Vercel atau manual trigger
     
-    const { data: users, error } = await supabase.from('users').select('telegram_user_id');
+    const { data: users, error } = await supabase.from('users').select('id, telegram_user_id');
     if (error) {
         return res.status(500).json({ error: error.message });
     }
+
+    const { data: inactiveReminders } = await supabase.from('reminders').select('user_id').eq('type', 'daily').eq('active', false);
+    const inactiveUserIds = new Set(inactiveReminders?.map(r => r.user_id) || []);
 
     const messages = [
         "Reminder: waktunya update catatan keuangan hari ini.",
@@ -22,7 +25,7 @@ export default async function handler(req, res) {
     
     let sent = 0;
     for (const u of (users || [])) {
-        if (u.telegram_user_id) {
+        if (!inactiveUserIds.has(u.id) && u.telegram_user_id) {
             try {
                 await sendMessage(u.telegram_user_id, msg);
                 sent++;

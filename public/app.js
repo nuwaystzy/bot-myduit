@@ -32,7 +32,7 @@ const cryptoWealthEl = document.getElementById('crypto-wealth');
 const cryptoPnLEl = document.getElementById('crypto-pnl');
 const categoryReportEl = document.getElementById('category-report');
 
-function init() {
+async function init() {
     tg.ready();
     tg.expand();
     tg.setHeaderColor('bg_color');
@@ -43,6 +43,16 @@ function init() {
         userId = user.id;
         userName = user.first_name || 'User';
         if (user.photo_url) userPhoto = user.photo_url;
+        
+        // Fetch toggle state
+        try {
+            const res = await fetch(`/api/settings?tg_id=${userId}&get_status=1`);
+            const data = await res.json();
+            const toggle = document.getElementById('toggle-reminder');
+            if (toggle) toggle.checked = data.active !== false;
+        } catch (e) {
+            console.error('Failed fetching settings:', e);
+        }
     }
     
     document.getElementById('user-name').innerText = userName;
@@ -488,28 +498,24 @@ function confirmReset() {
     };
 }
 
-async function triggerTestReminder() {
-    const btn = document.getElementById('btn-test-reminder');
-    if (!btn) return;
-    
-    const oriText = btn.innerText;
-    btn.innerText = '⏳';
-    btn.disabled = true;
-
+async function toggleReminder(isActive) {
     try {
-        const res = await fetch('/api/cron');
+        const res = await fetch('/api/settings', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ tg_id: userId, active: isActive })
+        });
         const data = await res.json();
         if (data.success) {
-            showToast('Pengingat dikirim ke bot!', '✨');
+            showToast(isActive ? 'Pengingat Aktif' : 'Pengingat Dimatikan', isActive ? '🔔' : '🔕');
         } else {
-            showToast('Gagal mengirim.', '❌');
+            showToast('Gagal mengubah pengaturan', '❌');
+            document.getElementById('toggle-reminder').checked = !isActive;
         }
     } catch(err) {
         showToast('Error koneksi.', '❌');
+        document.getElementById('toggle-reminder').checked = !isActive;
     }
-    
-    btn.innerText = oriText;
-    btn.disabled = false;
 }
 
 function showModal(content) {

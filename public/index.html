@@ -177,7 +177,10 @@
                         <h4 class="font-bold text-white text-[13px] flex items-center gap-1"><span class="text-base">🔔</span> Pengingat Harian</h4>
                         <p class="text-[10px] text-slate-400 mt-0.5 leading-tight pr-4">Pengingat otomatis pada jam 20:00 WIB via Chat Bot.</p>
                     </div>
-                    <button id="btn-test-reminder" onclick="triggerTestReminder()" class="shrink-0 px-4 py-2.5 bg-blue-600/20 text-blue-400 border border-blue-500/30 rounded-xl font-bold text-xs active:scale-95 transition-all">Uji Coba</button>
+                    <label class="relative inline-flex items-center cursor-pointer shrink-0">
+                        <input type="checkbox" id="toggle-reminder" class="sr-only peer" onchange="toggleReminder(this.checked)" checked>
+                        <div class="w-11 h-6 bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                    </label>
                 </div>
             </div>
 
