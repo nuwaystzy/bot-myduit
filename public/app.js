@@ -65,6 +65,17 @@ async function init() {
         showLoading(true);
         refreshData().finally(() => showLoading(false));
     };
+
+    // Deep link: Handle #edit=UUID from Bot inline button
+    refreshData().then(() => {
+        const hash = window.location.hash;
+        if (hash && hash.startsWith('#edit=')) {
+            const txId = hash.split('=')[1];
+            if (txId) {
+                setTimeout(() => openDetailModal(txId), 500);
+            }
+        }
+    });
 }
 
 async function refreshData() {
@@ -586,7 +597,102 @@ function formatIDR(val) {
 }
 
 function openDetailModal(id) {
-    // showToast('Detail ID: ' + id.substring(0,8), 'ℹ️');
+    const t = allTransactions.find(tx => tx.id === id);
+    if (!t) return;
+
+    const isCrypto = t.type === 'buy' || t.type === 'sell';
+    if (isCrypto) {
+        showToast('Transaksi Crypto tidak bisa diedit di sini.', 'ℹ️');
+        return;
+    }
+
+    const html = `
+        <div class="space-y-6">
+            <div class="flex items-center justify-between">
+                <h3 class="text-xl font-bold text-white">Edit Transaksi</h3>
+                <button onclick="closeModal()" class="text-slate-400">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+
+            <div class="space-y-4">
+                <div class="space-y-2">
+                    <label class="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Catatan / Nama</label>
+                    <input type="text" id="edit-note" value="${t.note || ''}" 
+                           class="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-4 text-white focus:outline-none focus:border-blue-500 transition-all font-bold">
+                </div>
+
+                <div class="space-y-2">
+                    <label class="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Nominal (Rp)</label>
+                    <input type="number" id="edit-amount" value="${t.amount_rp || 0}" 
+                           class="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-4 text-white focus:outline-none focus:border-blue-500 transition-all font-bold">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3 pt-4">
+                <button onclick="deleteTx('${t.id}')" 
+                        class="bg-red-500/10 border border-red-500/20 text-red-500 py-4 rounded-2xl font-bold flex items-center justify-center gap-2 active:scale-95 transition-all">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                    Hapus
+                </button>
+                <button onclick="saveEditTx('${t.id}')" 
+                        class="bg-blue-500 text-white py-4 rounded-2xl font-bold shadow-lg shadow-blue-500/20 active:scale-95 transition-all">
+                    Simpan Perubahan
+                </button>
+            </div>
+        </div>
+    `;
+    showModal(html);
+}
+
+async function saveEditTx(id) {
+    const note = document.getElementById('edit-note').value;
+    const amount = document.getElementById('edit-amount').value;
+
+    try {
+        const res = await fetch('/api/edit', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                user_id: userId,
+                id: id,
+                amount_rp: amount,
+                note: note
+            })
+        });
+
+        const data = await res.json();
+        if (data.success) {
+            showToast('Berhasil diupdate!', '✅');
+            closeModal();
+            refreshData();
+        } else {
+            showToast(data.error || 'Gagal update.', '❌');
+        }
+    } catch (err) {
+        showToast('Gagal koneksi.', '❌');
+    }
+}
+
+async function deleteTx(id) {
+    if (!confirm('Yakin ingin menghapus transaksi ini?')) return;
+
+    try {
+        const res = await fetch(`/api/delete?user_id=${userId}&id=${id}`, {
+            method: 'DELETE'
+        });
+
+        const data = await res.json();
+        if (data.success) {
+            showToast('Transaksi dihapus.', '🗑️');
+            closeModal();
+            refreshData();
+        } else {
+            showToast(data.error || 'Gagal hapus.', '❌');
+        }
+    } catch (err) {
+        showToast('Gagal koneksi.', '❌');
+    }
 }
 
 init();
