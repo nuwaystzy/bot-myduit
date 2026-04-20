@@ -120,6 +120,16 @@
                         <button onclick="changeReportTimeframe('month')" id="btn-rep-month" class="rep-toggle px-5 py-2 rounded-full glass-card text-[11px] font-bold whitespace-nowrap border-blue-500/50 bg-blue-500/10 text-white transition-all">Bulan Ini</button>
                     </div>
 
+                    <div id="month-nav" class="flex items-center justify-center gap-4 hidden mt-4 mb-2">
+                        <button onclick="prevReportMonth()" class="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-white active:scale-90 transition-all border border-white/5">
+                           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15 19l-7-7 7-7"></path></svg>
+                        </button>
+                        <span id="month-nav-label" class="text-[11px] font-black text-blue-400 min-w-[100px] text-center uppercase tracking-widest">Bulan Ini</span>
+                        <button id="month-nav-next" onclick="nextReportMonth()" disabled class="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-white active:scale-90 transition-all border border-white/5 opacity-30 cursor-not-allowed">
+                           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 5l7 7-7 7"></path></svg>
+                        </button>
+                    </div>
+
                     <div class="bg-white/5 p-4 rounded-2xl border border-white/5 shadow-inner">
                         <h3 id="rep-active-title" class="text-[10px] font-black text-slate-400 tracking-widest uppercase mb-4 text-center">Bulan Ini</h3>
                         <div class="flex justify-between">

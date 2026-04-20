@@ -314,9 +314,23 @@ function renderHistory(txs) {
 }
 
 let currentReportTimeframe = 'month';
+let reportMonthOffset = 0;
+
+function prevReportMonth() {
+    reportMonthOffset--;
+    renderDynamicReport(allTransactions);
+}
+
+function nextReportMonth() {
+    if (reportMonthOffset < 0) {
+        reportMonthOffset++;
+        renderDynamicReport(allTransactions);
+    }
+}
 
 function changeReportTimeframe(timeframe) {
     currentReportTimeframe = timeframe;
+    reportMonthOffset = 0; // reset
     
     // Update Toggle UI
     document.querySelectorAll('.rep-toggle').forEach(b => {
@@ -335,7 +349,11 @@ function changeReportTimeframe(timeframe) {
 function renderDynamicReport(txs) {
     const now = new Date();
     let startDate;
+    let endDate = null;
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+    const monthNavEl = document.getElementById('month-nav');
+    if (monthNavEl) monthNavEl.style.display = (currentReportTimeframe === 'month') ? 'flex' : 'none';
 
     if (currentReportTimeframe === 'day') {
         startDate = today;
@@ -346,8 +364,26 @@ function renderDynamicReport(txs) {
         startDate.setDate(today.getDate() - dayOfWeek + 1);
         document.getElementById('rep-active-title').innerText = 'Minggu Ini';
     } else {
-        startDate = new Date(now.getFullYear(), now.getMonth(), 1);
-        document.getElementById('rep-active-title').innerText = 'Bulan Ini';
+        const targetDate = new Date(now.getFullYear(), now.getMonth() + reportMonthOffset, 1);
+        startDate = targetDate;
+        endDate = new Date(now.getFullYear(), now.getMonth() + reportMonthOffset + 1, 1);
+        
+        const monthNames = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agt", "Sep", "Okt", "Nov", "Des"];
+        const monthTitle = `${monthNames[targetDate.getMonth()]} ${targetDate.getFullYear()}`;
+        document.getElementById('rep-active-title').innerText = reportMonthOffset === 0 ? 'Bulan Ini' : monthTitle;
+        
+        const monthLabel = document.getElementById('month-nav-label');
+        if (monthLabel) monthLabel.innerText = monthTitle;
+        
+        const nextBtn = document.getElementById('month-nav-next');
+        if (nextBtn) {
+            nextBtn.disabled = (reportMonthOffset >= 0);
+            if (reportMonthOffset >= 0) {
+                nextBtn.classList.add('opacity-30', 'cursor-not-allowed');
+            } else {
+                nextBtn.classList.remove('opacity-30', 'cursor-not-allowed');
+            }
+        }
     }
 
     let income = 0;
@@ -356,7 +392,7 @@ function renderDynamicReport(txs) {
 
     txs.forEach(t => {
         const d = new Date(t.created_at);
-        if (d >= startDate) {
+        if (d >= startDate && (!endDate || d < endDate)) {
             const amount = Number(t.amount_rp) || 0;
             if (t.type === 'income') {
                 income += amount;
