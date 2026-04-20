@@ -249,10 +249,10 @@ function createTxRow(t) {
         iconHtml = `
             <div class="w-11 h-11 rounded-2xl flex items-center justify-center bg-[#1c1c1e] border border-white/5 relative shadow-inner shrink-0 group">
                 <!-- Flaticon Crypto Buy/Sell Mask -->
-                <div class="w-6 h-6 ${cryptoColor}" style="-webkit-mask: url('/crypto-icon-mask.png') no-repeat center / contain; mask: url('/crypto-icon-mask.png') no-repeat center / contain;"></div>
+                <div class="w-8 h-8 ${cryptoColor}" style="-webkit-mask: url('/crypto-icon-mask.png') no-repeat center / 135%; mask: url('/crypto-icon-mask.png') no-repeat center / 135%;"></div>
                 
                 <!-- Tiny coin overlay -->
-                <img src="${getCoinIconUrl((t.asset || t.category || '').toLowerCase())}" class="absolute -bottom-1 -right-1 w-4 h-4 rounded-full border border-[#171717] opacity-80" onerror="this.style.display='none'">
+                <img src="${getCoinIconUrl((t.asset || t.category || '').toLowerCase())}" class="absolute -bottom-1 -right-1 w-4 h-4 rounded-full border border-[#171717] opacity-90" onerror="this.style.display='none'">
             </div>
         `;
     } else {
@@ -270,16 +270,16 @@ function createTxRow(t) {
     }
 
     return `
-        <div class="bg-white/[0.03] p-4 rounded-[20px] flex items-center justify-between active:scale-[0.98] transition-all mb-3 last:mb-0 border border-white/5" onclick="openDetailModal('${t.id}')">
-            <div class="flex items-center gap-4">
+        <div class="bg-white/[0.03] p-4 rounded-[20px] flex items-center justify-between active:scale-[0.98] transition-all mb-3 last:mb-0 border border-white/5 gap-2 w-full" onclick="openDetailModal('${t.id}')">
+            <div class="flex items-center gap-3 flex-1 min-w-0">
                 ${iconHtml}
-                <div>
-                    <h4 class="font-bold text-[14px] capitalize text-white tracking-wide">${t.category || t.asset || 'N/A'}</h4>
-                    <p class="text-[11px] text-white/40 mt-1 uppercase tracking-wider">${noteStr}${dateStr}, ${timeStr.replace('.', ':')}</p>
+                <div class="flex-1 min-w-0 text-left">
+                    <h4 class="font-bold text-[14px] capitalize text-white tracking-wide truncate w-full">${t.category || t.asset || 'N/A'}</h4>
+                    <p class="text-[10px] text-white/40 mt-1 uppercase tracking-wider truncate w-full">${noteStr}${dateStr}, ${timeStr.replace('.', ':')}</p>
                 </div>
             </div>
-            <div class="text-right">
-                <p class="font-black text-[14px] tracking-wide ${color}">${sign}${formatIDR(t.amount_rp)}</p>
+            <div class="text-right shrink-0">
+                <p class="font-black text-[13px] sm:text-[14px] tracking-wide ${color}">${sign}${formatIDR(t.amount_rp)}</p>
             </div>
         </div>
     `;
