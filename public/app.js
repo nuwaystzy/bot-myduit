@@ -300,7 +300,7 @@ function createTxRow(t) {
                 ${iconHtml}
                 <div class="flex-1 min-w-0 text-left">
                     <h4 class="font-bold text-[14px] capitalize text-white tracking-wide truncate w-full">${t.category || t.asset || 'N/A'}</h4>
-                    <p class="text-[10px] text-white/40 mt-1 uppercase tracking-wider truncate w-full">${noteStr}${dateStr}, ${timeStr.replace('.', ':')}</p>
+                    <p class="text-[10px] text-white/40 mt-1 uppercase tracking-wider truncate w-full">${noteStr}${timeStr.replace('.', ':')}</p>
                 </div>
             </div>
             <div class="text-right shrink-0">
@@ -325,7 +325,51 @@ function renderHistory(txs) {
         fullHistoryEl.innerHTML = '<p class="text-xs text-slate-500 italic text-center py-4">Belum ada riwayat transaksi.</p>';
         return;
     }
-    fullHistoryEl.innerHTML = txs.map(t => createTxRow(t)).join('');
+    
+    // Batasan maksimal 50 transaksi
+    const limitedTxs = txs.slice(0, 50);
+    
+    // Grouping by Date
+    const groups = {};
+    const today = new Date();
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    
+    limitedTxs.forEach(t => {
+        const rawDate = new Date(t.created_at);
+        const isToday = rawDate.getDate() === today.getDate() && rawDate.getMonth() === today.getMonth() && rawDate.getFullYear() === today.getFullYear();
+        const isYesterday = rawDate.getDate() === yesterday.getDate() && rawDate.getMonth() === yesterday.getMonth() && rawDate.getFullYear() === yesterday.getFullYear();
+        
+        let dateKey = rawDate.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+        if (isToday) dateKey = 'Hari Ini';
+        else if (isYesterday) dateKey = 'Kemarin';
+        
+        if (!groups[dateKey]) groups[dateKey] = [];
+        groups[dateKey].push(t);
+    });
+    
+    let html = '';
+    for (const [dateKey, groupTxs] of Object.entries(groups)) {
+        html += `
+            <div class="w-full text-left mt-6 mb-3 first:mt-0 px-2 flex items-center gap-3">
+                <span class="text-[10px] font-bold text-white/40 uppercase tracking-widest shrink-0">${dateKey}</span>
+                <div class="h-px bg-white/5 w-full rounded-full"></div>
+            </div>
+            <div class="space-y-2">
+                ${groupTxs.map(t => createTxRow(t)).join('')}
+            </div>
+        `;
+    }
+    
+    if (txs.length > 50) {
+        html += `
+            <div class="w-full text-center mt-6 mb-2">
+                <p class="text-[10px] font-medium text-white/30">Hanya menampilkan 50 riwayat terakhir</p>
+            </div>
+        `;
+    }
+    
+    fullHistoryEl.innerHTML = html;
 }
 
 let currentReportTimeframe = 'month';
