@@ -104,6 +104,10 @@ async function fetchSummary() {
         cryptoPnLEl.className = `text-sm font-medium mt-1 ${pnlColor}`;
         cryptoPnLEl.innerText = `PnL: ${formatIDR(pnl)} (${pnlPct.toFixed(2)}%)`;
         
+        const monthName = new Date().toLocaleDateString('id-ID', { month: 'short' }).toUpperCase();
+        document.getElementById('income-month-badge').innerText = `• ${monthName}`;
+        document.getElementById('expense-month-badge').innerText = `• ${monthName}`;
+        
         // Removed static renderCategoryReport here, as it's now handled by dynamic toggle
     } catch (err) {
         console.error('Fetch Summary Error:', err);
