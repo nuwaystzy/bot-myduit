@@ -20,19 +20,20 @@ export default async function handler(req, res) {
     const internalId = user.id;
 
     // 2. Fetch data in parallel
-    const [cashflow, portfolio, categories] = await Promise.all([
+    const [cashflowMonthly, cashflowAll, portfolio, categories] = await Promise.all([
       getCashflowSummary(internalId, 'month'),
+      getCashflowSummary(internalId, 'all'),
       getPortfolioSummary(internalId),
       getCategoryStats(internalId, 'month')
     ]);
 
-    const totalWealth = cashflow.net + portfolio.totalCurrentValue;
+    const totalWealth = cashflowAll.net + portfolio.totalCurrentValue;
 
     return res.status(200).json({
       name: user.name,
       total: totalWealth,
-      income: cashflow.income,
-      expense: cashflow.expense,
+      income: cashflowMonthly.income,
+      expense: cashflowMonthly.expense,
       crypto_value: portfolio.totalCurrentValue,
       crypto_pnl: portfolio.totalPnL,
       crypto_pnl_percent: portfolio.totalPnLPercent,
